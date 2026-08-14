@@ -32,6 +32,27 @@
 
     <main class="app">
       <section id="home" class="home">
+        <div id="lang" class="lang" role="radiogroup" aria-label="Language">
+          <button
+            type="button"
+            class="lang__btn"
+            data-locale="pl"
+            role="radio"
+            aria-checked="false"
+          >
+            PL
+          </button>
+          <button
+            type="button"
+            class="lang__btn"
+            data-locale="en"
+            role="radio"
+            aria-checked="false"
+          >
+            EN
+          </button>
+        </div>
+
         <div class="brand">
           <svg
             class="brand__mark"
@@ -62,10 +83,10 @@
             <circle cx="32" cy="10" r="4.5" fill="currentColor" />
           </svg>
           <h1 class="brand__name">Stoppo</h1>
-          <p class="brand__tagline">Stop the clock.</p>
+          <p id="tagline" class="brand__tagline">Stop the clock.</p>
         </div>
 
-        <div class="modes" role="radiogroup" aria-label="Game mode">
+        <div id="modes" class="modes" role="radiogroup" aria-label="Game mode">
           <button
             type="button"
             class="mode is-selected"
@@ -74,10 +95,10 @@
             aria-checked="true"
           >
             <span class="mode__row">
-              <span class="mode__name">Reflex</span>
+              <span class="mode__name" data-name="reflex">Reflex</span>
               <span class="mode__best" data-best="reflex">—</span>
             </span>
-            <span class="mode__desc">
+            <span class="mode__desc" data-desc="reflex">
               It lights up. You tap. Nothing else in your head.
             </span>
           </button>
@@ -90,10 +111,10 @@
             aria-checked="false"
           >
             <span class="mode__row">
-              <span class="mode__name">Count</span>
+              <span class="mode__name" data-name="count">Count</span>
               <span class="mode__best" data-best="count">—</span>
             </span>
-            <span class="mode__desc">
+            <span class="mode__desc" data-desc="count">
               A random 2–10s to count out in the dark. Early is burnt.
             </span>
           </button>
@@ -106,30 +127,30 @@
             aria-checked="false"
           >
             <span class="mode__row">
-              <span class="mode__name">Lock</span>
+              <span class="mode__name" data-name="lock">Lock</span>
               <span class="mode__best" data-best="lock">—</span>
             </span>
-            <span class="mode__desc">
+            <span class="mode__desc" data-desc="lock">
               One interval you pick, over and over, until you own it.
             </span>
           </button>
         </div>
 
         <div id="lockrow" class="lockrow" hidden>
-          <span class="lockrow__label">Interval</span>
+          <span id="intervalLabel" class="lockrow__label">Interval</span>
           <div id="chips" class="chips" role="radiogroup" aria-label="Interval">
             <!-- populated at runtime -->
           </div>
         </div>
 
         <button type="button" id="play" class="play">
-          <span class="play__label">Play</span>
-          <span class="play__hint">or press space</span>
+          <span id="playLabel" class="play__label">Play</span>
+          <span id="playHint" class="play__hint">or press space</span>
         </button>
 
-        <p class="fineprint">
-          Plays full-screen white flashes on a dark screen. Sit this one out if
-          that is a problem for you.
+        <p id="fineprint" class="fineprint">
+          Plays bright flashes on a dark screen. Sit this one out if that is a
+          problem for you.
         </p>
       </section>
 
@@ -143,9 +164,12 @@
         <button type="button" id="back" class="back">Modes</button>
 
         <div class="core">
-          <div class="ring" aria-hidden="true"></div>
-          <p id="cue" class="cue">Hold steady</p>
-          <p id="target" class="target"></p>
+          <div class="waiter" aria-hidden="true">
+            <span class="waiter__arc"></span>
+          </div>
+          <p id="cue" class="cue">Wait</p>
+          <p id="cueSub" class="cue-sub"></p>
+          <p id="counting" class="counting"></p>
         </div>
 
         <div id="verdict" class="verdict">
@@ -154,19 +178,33 @@
             <span id="verdictNumber" class="verdict__number">0</span>
             <span id="verdictUnit" class="verdict__unit">ms</span>
           </p>
+          <div
+            id="meter"
+            class="meter"
+            role="meter"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <span id="meterFill" class="meter__fill"></span>
+          </div>
           <p id="verdictDetail" class="verdict__detail"></p>
           <p id="verdictBest" class="verdict__best"></p>
         </div>
 
-        <button type="button" id="again" class="again">
-          <span class="again__label">Again</span>
-          <span class="again__hint">tap anywhere</span>
-        </button>
+        <div id="retry" class="retry">
+          <button type="button" id="again" class="again">Again</button>
+          <p id="againHint" class="retry__hint">
+            or tap anywhere on the screen
+          </p>
+        </div>
       </section>
     </main>
 
     <div id="flash" class="flash" aria-hidden="true">
-      <span class="flash__word">Tap</span>
+      <div class="flash__disc">
+        <span id="flashWord" class="flash__word">Tap</span>
+      </div>
     </div>
 
     <p id="live" class="sr-only" role="status" aria-live="polite"></p>

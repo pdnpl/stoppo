@@ -4,14 +4,17 @@
 fast you can react to a light, and how well you can hold a second in your head
 with nothing on screen to help you.
 
-No accounts, no leaderboard, no backend. Around 4 kB of JavaScript, served
+No accounts, no leaderboard, no backend. Under 6 kB of JavaScript, served
 straight from Cloudflare's edge.
 
 ## The three modes
 
+Plays in **English and Polish**, picked from your browser and switchable in the
+corner of the home screen.
+
 | Mode       | What happens                                                                         | What it scores            |
 | ---------- | ------------------------------------------------------------------------------------ | ------------------------- |
-| **Reflex** | The screen is dark for 1–5s, then floods white. Press.                               | Reaction time, ms         |
+| **Reflex** | Dark for 1–5s, then a disc of light lands in the centre. Press.                      | Reaction time, ms         |
 | **Count**  | You are told an interval (2–10s, random). The flash starts it. Count it in the dark. | Overshoot, ms             |
 | **Lock**   | The same, on an interval you choose and keep, so you can train one number.           | Overshoot, ms, per target |
 
@@ -108,6 +111,8 @@ src/
   engine/      the browser half
     engine.ts    the frame loop, and where the flash timestamp comes from
     input.ts     turning an event into a trustworthy timestamp
+  i18n/
+    copy.ts      every word the game says, in English and Polish
   ui/
     verdict.ts   outcome → what the result screen says
   main.ts      wiring, DOM, screens
@@ -118,9 +123,13 @@ docs/adr/      why any of this is the way it is
 
 ## Accessibility and photosensitivity
 
-The game plays **full-screen white flashes on a dark background**. That is the
-mechanic and it cannot be turned off, so the home screen says so before you
-press anything. Sit it out if that is a problem for you.
+The game plays **bright flashes on a dark background**. That is the mechanic and
+it cannot be turned off, so the home screen says so before you press anything.
+Sit it out if that is a problem for you.
+
+The flash is a central disc over a faint wash rather than a whole white screen —
+about an eighth of the light, and no harder to see, because it lands where you
+are already looking ([ADR 12](docs/adr/0012-flash-a-disc-not-the-screen.md)).
 
 Everything else is covered: the game is fully playable from the keyboard with
 the space bar, results are announced to a live region, focus is visible, and
