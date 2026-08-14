@@ -1,0 +1,21 @@
+{
+  "name": "Stoppo",
+  "short_name": "Stoppo",
+  "description": "Stop the clock. A frame-accurate reaction and internal-clock game.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#04050b",
+  "theme_color": "#04050b",
+  "categories": ["games"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}
