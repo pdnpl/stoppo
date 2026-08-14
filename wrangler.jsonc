@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "stoppo",
+  "compatibility_date": "2026-08-01",
+
+  // Assets-only Worker: no `main`, so Cloudflare serves the built game straight
+  // from the edge with no Worker invocation and no server-side code at all.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+  },
+
+  "observability": {
+    "enabled": true,
+  },
+}
