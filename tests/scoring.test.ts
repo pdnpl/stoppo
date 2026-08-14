@@ -7,6 +7,7 @@ import {
   gradeError,
   gradeOf,
   gradeReaction,
+  qualityOf,
   scoreOf,
 } from '../src/game/scoring';
 
@@ -59,6 +60,42 @@ describe('scoreOf', () => {
     ).toBeNull();
     expect(scoreOf({ kind: 'abandoned' })).toBeNull();
     expect(gradeOf({ kind: 'abandoned' })).toBeNull();
+  });
+});
+
+describe('qualityOf', () => {
+  it('fills the meter for a reaction nobody beats and empties it at 500ms', () => {
+    expect(qualityOf({ kind: 'reaction', reactionMs: 100 })).toBe(1);
+    expect(qualityOf({ kind: 'reaction', reactionMs: 120 })).toBe(1);
+    expect(qualityOf({ kind: 'reaction', reactionMs: 310 })).toBeCloseTo(
+      0.5,
+      5,
+    );
+    expect(qualityOf({ kind: 'reaction', reactionMs: 500 })).toBe(0);
+    expect(qualityOf({ kind: 'reaction', reactionMs: 900 })).toBe(0);
+  });
+
+  it('fills the meter for a perfect count and empties it 1.5s out', () => {
+    const timed = (errorMs: number) =>
+      qualityOf({ kind: 'timed', targetMs: 3_000, elapsedMs: 0, errorMs });
+
+    expect(timed(0)).toBe(1);
+    expect(timed(750)).toBeCloseTo(0.5, 5);
+    expect(timed(1_500)).toBe(0);
+    expect(timed(4_000)).toBe(0);
+  });
+
+  it('reads nothing off a round that measured nothing', () => {
+    expect(qualityOf({ kind: 'falseStart', earlyByMs: 200 })).toBeNull();
+    expect(
+      qualityOf({
+        kind: 'tooEarly',
+        targetMs: 3_000,
+        elapsedMs: 2_800,
+        shortByMs: 200,
+      }),
+    ).toBeNull();
+    expect(qualityOf({ kind: 'abandoned' })).toBeNull();
   });
 });
 

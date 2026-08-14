@@ -1,25 +1,25 @@
-import { GRADE_LABEL, formatMs, formatSeconds, gradeOf } from '../game/scoring';
+import { formatMs, formatSeconds, gradeOf, qualityOf } from '../game/scoring';
 import type { Outcome } from '../game/types';
+import type { Copy } from '../i18n/copy';
 
 export interface VerdictView {
   /** Grade or failure headline. */
   label: string;
-  /** The big numeral, or an em dash when there is nothing honest to show. */
+  /** The big numeral, or a dash when there is nothing honest to show. */
   number: string;
   unit: string;
   detail: string;
   fail: boolean;
+  /** 0–1 for the quality meter, `null` when the round measured nothing. */
+  quality: number | null;
   /** Sentence for the live region. */
   announce: string;
 }
 
-function interval(targetMs: number, elapsedMs: number): string {
-  return `target ${formatSeconds(targetMs)}s · you ${formatSeconds(elapsedMs)}s`;
-}
-
-export function verdictView(outcome: Outcome): VerdictView {
+export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
   const grade = gradeOf(outcome);
-  const headline = grade === null ? '' : GRADE_LABEL[grade];
+  const headline = grade === null ? '' : copy.grades[grade];
+  const quality = qualityOf(outcome);
 
   switch (outcome.kind) {
     case 'reaction': {
@@ -27,10 +27,11 @@ export function verdictView(outcome: Outcome): VerdictView {
       return {
         label: headline,
         number: ms,
-        unit: 'ms',
+        unit: copy.unitMs,
         detail: '',
         fail: false,
-        announce: `${ms} milliseconds. ${headline}.`,
+        quality,
+        announce: copy.announceReaction(ms, headline),
       };
     }
     case 'timed': {
@@ -38,40 +39,50 @@ export function verdictView(outcome: Outcome): VerdictView {
       return {
         label: headline,
         number: ms,
-        unit: 'ms late',
-        detail: interval(outcome.targetMs, outcome.elapsedMs),
+        unit: copy.unitLate,
+        detail: copy.againstTarget(
+          formatSeconds(outcome.targetMs),
+          formatSeconds(outcome.elapsedMs),
+        ),
         fail: false,
-        announce: `${ms} milliseconds late. ${headline}.`,
+        quality,
+        announce: copy.announceLate(ms, headline),
       };
     }
     case 'falseStart':
       return {
-        label: 'False start',
-        number: '—',
+        label: copy.falseStart,
+        number: copy.noNumber,
         unit: '',
-        detail: 'You went before the light.',
+        detail: copy.falseStartDetail,
         fail: true,
-        announce: 'False start. You went before the light.',
+        quality: null,
+        announce: copy.announceFalseStart,
       };
     case 'tooEarly': {
       const ms = formatMs(outcome.shortByMs);
       return {
-        label: 'Too early',
+        label: copy.tooEarly,
         number: ms,
-        unit: 'ms short',
-        detail: interval(outcome.targetMs, outcome.elapsedMs),
+        unit: copy.unitShort,
+        detail: copy.againstTarget(
+          formatSeconds(outcome.targetMs),
+          formatSeconds(outcome.elapsedMs),
+        ),
         fail: true,
-        announce: `Too early by ${ms} milliseconds.`,
+        quality: null,
+        announce: copy.announceTooEarly(ms),
       };
     }
     case 'abandoned':
       return {
-        label: 'Dropped',
-        number: '—',
+        label: copy.dropped,
+        number: copy.noNumber,
         unit: '',
-        detail: 'No press came. Round dropped.',
+        detail: copy.droppedDetail,
         fail: true,
-        announce: 'Round dropped. No press came.',
+        quality: null,
+        announce: copy.announceDropped,
       };
   }
 }

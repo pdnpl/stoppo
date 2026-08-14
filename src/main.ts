@@ -21,6 +21,8 @@ import {
 import { cryptoRandom } from './game/rng';
 import { formatMs, formatTargetSeconds, scoreOf } from './game/scoring';
 import type { GameState, Mode, Outcome, RoundPlan } from './game/types';
+import { COPY, LOCALES, detectLocale } from './i18n/copy';
+import type { Copy, Locale } from './i18n/copy';
 import { verdictView } from './ui/verdict';
 
 function el(id: string): HTMLElement {
@@ -42,24 +44,46 @@ const stage = el('stage');
 const back = button('back');
 const play = button('play');
 const cue = el('cue');
-const target = el('target');
+const cueSub = el('cueSub');
+const counting = el('counting');
 const verdict = el('verdict');
 const verdictLabel = el('verdictLabel');
 const verdictNumber = el('verdictNumber');
 const verdictUnit = el('verdictUnit');
 const verdictDetail = el('verdictDetail');
 const verdictBest = el('verdictBest');
+const meter = el('meter');
+const meterFill = el('meterFill');
+const retry = el('retry');
 const again = button('again');
+const againHint = el('againHint');
 const flash = el('flash');
+const flashWord = el('flashWord');
 const live = el('live');
 const lockrow = el('lockrow');
+const intervalLabel = el('intervalLabel');
 const chips = el('chips');
+const modes = el('modes');
+const lang = el('lang');
+const tagline = el('tagline');
+const playLabel = el('playLabel');
+const playHint = el('playHint');
+const fineprint = el('fineprint');
 
 const modeButtons = Array.from(
   document.querySelectorAll<HTMLButtonElement>('.mode'),
 );
+const langButtons = Array.from(
+  document.querySelectorAll<HTMLButtonElement>('.lang__btn'),
+);
 const bestNodes = Array.from(
   document.querySelectorAll<HTMLElement>('[data-best]'),
+);
+const nameNodes = Array.from(
+  document.querySelectorAll<HTMLElement>('[data-name]'),
+);
+const descNodes = Array.from(
+  document.querySelectorAll<HTMLElement>('[data-desc]'),
 );
 
 const MODES: readonly Mode[] = ['reflex', 'count', 'lock'];
@@ -68,9 +92,14 @@ function toMode(value: string | undefined): Mode | null {
   return MODES.find((candidate) => candidate === value) ?? null;
 }
 
+function toLocale(value: string | undefined): Locale | null {
+  return LOCALES.find((candidate) => candidate === value) ?? null;
+}
+
 const storage = browserStorage();
 let records = loadRecords(storage);
-let prefs = loadPrefs(storage);
+let prefs = loadPrefs(storage, detectLocale(navigator.languages));
+let copy: Copy = COPY[prefs.locale];
 let lastPointer: { x: number; y: number } | null = null;
 let pulseTimer: number | null = null;
 
@@ -79,7 +108,6 @@ let pulseTimer: number | null = null;
    ------------------------------------------------------------------------- */
 
 function paintFlash(hold: boolean): void {
-  flash.classList.toggle('is-hold', hold);
   flash.classList.add('is-on');
 
   if (!hold) {
@@ -97,47 +125,65 @@ function clearFlash(): void {
     clearTimeout(pulseTimer);
     pulseTimer = null;
   }
-  flash.classList.remove('is-on', 'is-hold');
+  flash.classList.remove('is-on');
 }
 
 /* -------------------------------------------------------------------------
    Rendering
    ------------------------------------------------------------------------- */
 
-const CUE: Record<Mode, string> = {
-  reflex: 'Wait for the light',
-  count: 'Count after the flash',
-  lock: 'Count after the flash',
-};
-
 function render(state: GameState): void {
   stage.dataset.phase = state.phase;
-  back.disabled = !isTerminal(state.phase);
+
+  const shouldDisable = !isTerminal(state.phase);
+  if (back.disabled !== shouldDisable) back.disabled = shouldDisable;
 
   const plan = state.plan;
   if (plan === null) return;
 
+  // Only refreshed when a round is armed. Rewriting text on the frame that
+  // paints the flash would drag layout into the one frame that must not have
+  // any.
+  if (state.phase !== 'armed') return;
+
   stage.dataset.mode = plan.mode;
-  cue.textContent = CUE[plan.mode];
-  target.hidden = plan.targetMs === null;
-  if (plan.targetMs !== null) {
-    target.textContent = `${formatTargetSeconds(plan.targetMs)}s`;
+  flashWord.textContent =
+    plan.mode === 'reflex' ? copy.flashTap : copy.flashStart;
+  cue.textContent = copy.wait;
+
+  if (plan.targetMs === null) {
+    cueSub.textContent = copy.waitReflex;
+    counting.textContent = '';
+  } else {
+    const seconds = formatTargetSeconds(plan.targetMs);
+    cueSub.textContent = copy.waitThenCount(seconds);
+    counting.textContent = copy.countingNow(seconds);
   }
 }
 
-function placeAgain(): void {
-  const margin = 74;
+/** The pill follows the hand sideways, but never into the verdict's space. */
+function placeRetry(): void {
+  const margin = 110;
   const x =
     lastPointer === null
       ? window.innerWidth / 2
       : Math.min(Math.max(lastPointer.x, margin), window.innerWidth - margin);
-  const y =
-    lastPointer === null
-      ? window.innerHeight * 0.74
-      : Math.min(Math.max(lastPointer.y, margin), window.innerHeight - margin);
 
-  again.style.setProperty('--tap-x', `${Math.round(x)}px`);
-  again.style.setProperty('--tap-y', `${Math.round(y)}px`);
+  retry.style.setProperty('--tap-x', `${Math.round(x)}px`);
+}
+
+function renderMeter(quality: number | null): void {
+  if (quality === null) {
+    meter.hidden = true;
+    return;
+  }
+
+  const percent = Math.round(quality * 100);
+  meter.hidden = false;
+  meter.dataset.band =
+    quality >= 0.6 ? 'good' : quality >= 0.3 ? 'mid' : 'poor';
+  meter.setAttribute('aria-valuenow', `${percent}`);
+  meterFill.style.width = `${percent}%`;
 }
 
 function renderBests(): void {
@@ -151,22 +197,24 @@ function renderBests(): void {
       mode === 'lock' ? prefs.lockTargetMs : null,
     );
     if (best === null) {
-      node.textContent = '—';
+      node.textContent = copy.bestNone;
     } else {
+      const value = formatMs(best);
       node.textContent =
-        mode === 'reflex' ? `${formatMs(best)} ms` : `${formatMs(best)} ms off`;
+        mode === 'reflex' ? copy.bestReflex(value) : copy.bestOff(value);
     }
   }
 }
 
 function settled(outcome: Outcome, plan: RoundPlan): void {
-  const view = verdictView(outcome);
+  const view = verdictView(outcome, copy);
 
   verdict.classList.toggle('is-fail', view.fail);
   verdictLabel.textContent = view.label;
   verdictNumber.textContent = view.number;
   verdictUnit.textContent = view.unit;
   verdictDetail.textContent = view.detail;
+  renderMeter(view.quality);
 
   const score = scoreOf(outcome);
   let isRecord = false;
@@ -180,14 +228,14 @@ function settled(outcome: Outcome, plan: RoundPlan): void {
   const best = bestFor(records, plan.mode, plan.targetMs);
   verdictBest.classList.toggle('is-record', isRecord);
   if (isRecord) {
-    verdictBest.textContent = 'New best';
+    verdictBest.textContent = copy.newBest;
   } else if (best === null) {
     verdictBest.textContent = '';
   } else {
-    verdictBest.textContent = `Best ${formatMs(best)} ms`;
+    verdictBest.textContent = copy.best(`${formatMs(best)} ms`);
   }
 
-  placeAgain();
+  placeRetry();
   live.textContent = view.announce;
   buzz(view.fail ? [8, 40, 8] : 12);
 }
@@ -234,6 +282,50 @@ function goHome(): void {
 }
 
 /* -------------------------------------------------------------------------
+   Language
+   ------------------------------------------------------------------------- */
+
+function applyCopy(): void {
+  document.documentElement.lang = prefs.locale;
+
+  tagline.textContent = copy.tagline;
+  lang.setAttribute('aria-label', copy.language);
+  modes.setAttribute('aria-label', copy.modeGroup);
+  intervalLabel.textContent = copy.interval;
+  chips.setAttribute('aria-label', copy.interval);
+  playLabel.textContent = copy.play;
+  playHint.textContent = copy.playHint;
+  fineprint.textContent = copy.fineprint;
+  back.textContent = copy.back;
+  again.textContent = copy.again;
+  againHint.textContent = copy.tapAnywhere;
+
+  for (const node of nameNodes) {
+    const mode = toMode(node.dataset.name);
+    if (mode !== null) node.textContent = copy.modes[mode].name;
+  }
+  for (const node of descNodes) {
+    const mode = toMode(node.dataset.desc);
+    if (mode !== null) node.textContent = copy.modes[mode].desc;
+  }
+
+  for (const node of langButtons) {
+    const selected = node.dataset.locale === prefs.locale;
+    node.classList.toggle('is-selected', selected);
+    node.setAttribute('aria-checked', `${selected}`);
+  }
+
+  renderBests();
+}
+
+function selectLocale(locale: Locale): void {
+  prefs = { ...prefs, locale };
+  savePrefs(storage, prefs);
+  copy = COPY[locale];
+  applyCopy();
+}
+
+/* -------------------------------------------------------------------------
    Home controls
    ------------------------------------------------------------------------- */
 
@@ -241,10 +333,10 @@ function selectMode(mode: Mode): void {
   prefs = { ...prefs, mode };
   savePrefs(storage, prefs);
 
-  for (const button of modeButtons) {
-    const isSelected = button.dataset.mode === mode;
-    button.classList.toggle('is-selected', isSelected);
-    button.setAttribute('aria-checked', String(isSelected));
+  for (const node of modeButtons) {
+    const selected = node.dataset.mode === mode;
+    node.classList.toggle('is-selected', selected);
+    node.setAttribute('aria-checked', `${selected}`);
   }
   lockrow.hidden = mode !== 'lock';
   renderBests();
@@ -255,9 +347,9 @@ function selectTarget(targetMs: number): void {
   savePrefs(storage, prefs);
 
   for (const chip of chips.children) {
-    const isSelected = (chip as HTMLElement).dataset.target === `${targetMs}`;
-    chip.classList.toggle('is-selected', isSelected);
-    chip.setAttribute('aria-checked', String(isSelected));
+    const selected = (chip as HTMLElement).dataset.target === `${targetMs}`;
+    chip.classList.toggle('is-selected', selected);
+    chip.setAttribute('aria-checked', `${selected}`);
   }
   renderBests();
 }
@@ -280,10 +372,17 @@ function buildChips(): void {
   chips.append(fragment);
 }
 
-for (const button of modeButtons) {
-  button.addEventListener('click', () => {
-    const mode = toMode(button.dataset.mode);
+for (const node of modeButtons) {
+  node.addEventListener('click', () => {
+    const mode = toMode(node.dataset.mode);
     if (mode !== null) selectMode(mode);
+  });
+}
+
+for (const node of langButtons) {
+  node.addEventListener('click', () => {
+    const locale = toLocale(node.dataset.locale);
+    if (locale !== null) selectLocale(locale);
   });
 }
 
@@ -345,5 +444,6 @@ document.addEventListener('visibilitychange', () => {
    ------------------------------------------------------------------------- */
 
 buildChips();
+applyCopy();
 selectMode(prefs.mode);
 selectTarget(prefs.lockTargetMs);

@@ -2,12 +2,12 @@
    Stoppo — Neon Void
    Every animated property here is transform or opacity, so the compositor
    handles motion on its own thread and the main thread stays free to notice
-   a finger landing.
+   a finger landing. Nothing that changes on the frame the flash is painted
+   into may trigger layout.
    ========================================================================== */
 
 :root {
   --void: #04050b;
-  --void-lift: #090d16;
   --cyan: #22d3ee;
   --cyan-soft: #6ee7f9;
   --cyan-glass: rgb(34 211 238 / 12%);
@@ -15,9 +15,8 @@
   --ink: #e8feff;
   --muted: #7c8794;
   --muted-deep: #4b5563;
+  --amber: #f5b544;
   --danger: #fb4d63;
-  --danger-glass: rgb(251 77 99 / 12%);
-  --danger-line: rgb(251 77 99 / 42%);
 
   --font:
     -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI',
@@ -102,15 +101,44 @@ button {
 /* --- home --------------------------------------------------------------- */
 
 .home {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 26px;
-  padding: max(28px, env(safe-area-inset-top)) var(--pad-edge)
+  padding: max(56px, env(safe-area-inset-top)) var(--pad-edge)
     max(28px, env(safe-area-inset-bottom));
   animation: rise 420ms var(--ease) both;
+}
+
+.lang {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: var(--pad-edge);
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgb(148 163 184 / 14%);
+  border-radius: 999px;
+}
+
+.lang__btn {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted-deep);
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease);
+}
+
+.lang__btn.is-selected {
+  background: var(--cyan-glass);
+  color: var(--cyan-soft);
 }
 
 .brand {
@@ -208,6 +236,7 @@ button {
   letter-spacing: 0.14em;
   color: var(--muted-deep);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .mode.is-selected .mode__best {
@@ -358,80 +387,128 @@ button {
   pointer-events: auto;
 }
 
+/* --- waiting ------------------------------------------------------------ */
+
 .core {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 20px;
+  /* Fading rather than hiding: the frame that paints the flash must not be
+     asked to run layout as well. */
+  opacity: 1;
+  transition: opacity 140ms var(--ease);
 }
 
-.ring {
+.waiter {
   position: relative;
-  width: 116px;
-  height: 116px;
-  border: 1.5px solid var(--cyan-line);
+  width: 84px;
+  height: 84px;
+}
+
+.waiter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgb(148 163 184 / 16%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(34 211 238 / 14%), transparent 68%);
-  box-shadow:
-    0 0 34px rgb(34 211 238 / 26%),
-    inset 0 0 26px rgb(34 211 238 / 14%);
-  animation: breathe 2600ms var(--ease) infinite alternate;
+  background: radial-gradient(circle, rgb(34 211 238 / 10%), transparent 68%);
+}
+
+.waiter__arc {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid transparent;
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgb(34 211 238 / 30%);
+  animation: spin 1250ms linear infinite;
 }
 
 .cue {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.3em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
   text-transform: uppercase;
   color: var(--cyan-soft);
   text-align: center;
 }
 
-.target {
+.cue-sub {
+  max-width: 300px;
+  margin: -12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--muted);
+}
+
+.cue-sub:empty {
+  display: none;
+}
+
+/* Absolutely placed so switching to it costs no layout, and deliberately
+   motionless: a moving pixel here is a clock the player could read. */
+.counting {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   margin: 0;
-  font-size: 44px;
-  font-weight: 300;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-shadow: 0 0 30px rgb(34 211 238 / 55%);
-}
-
-/* Phase visibility. The counting phase is deliberately almost empty: any
-   moving pixel would be a clock the player could read. */
-.stage .verdict,
-.stage .again {
-  display: none;
-}
-
-.stage[data-phase='counting'] .ring,
-.stage[data-phase='counting'] .cue {
-  display: none;
-}
-
-.stage[data-phase='counting'] .target {
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--muted-deep);
-  text-shadow: none;
-  letter-spacing: 0.2em;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 200ms var(--ease);
+  pointer-events: none;
+}
+
+.stage[data-phase='flashPending'] .core,
+.stage[data-phase='signal'] .core,
+.stage[data-phase='counting'] .core {
+  opacity: 0;
+}
+
+.stage[data-phase='counting'] .counting {
+  opacity: 1;
+}
+
+.stage[data-phase='counting'] .waiter__arc {
+  animation: none;
+}
+
+/* --- phase visibility --------------------------------------------------- */
+
+.stage .verdict,
+.stage .retry {
+  display: none;
 }
 
 .stage[data-phase='result'] .core,
 .stage[data-phase='falseStart'] .core,
 .stage[data-phase='tooEarly'] .core,
-.stage[data-phase='abandoned'] .core {
+.stage[data-phase='abandoned'] .core,
+.stage[data-phase='result'] .counting,
+.stage[data-phase='falseStart'] .counting,
+.stage[data-phase='tooEarly'] .counting,
+.stage[data-phase='abandoned'] .counting {
   display: none;
 }
 
 .stage[data-phase='result'] .verdict,
 .stage[data-phase='falseStart'] .verdict,
 .stage[data-phase='tooEarly'] .verdict,
-.stage[data-phase='abandoned'] .verdict,
-.stage[data-phase='result'] .again,
-.stage[data-phase='falseStart'] .again,
-.stage[data-phase='tooEarly'] .again,
-.stage[data-phase='abandoned'] .again {
+.stage[data-phase='abandoned'] .verdict {
+  display: flex;
+}
+
+.stage[data-phase='result'] .retry,
+.stage[data-phase='falseStart'] .retry,
+.stage[data-phase='tooEarly'] .retry,
+.stage[data-phase='abandoned'] .retry {
   display: flex;
 }
 
@@ -440,16 +517,18 @@ button {
 .verdict {
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 0;
+  padding-bottom: 92px; /* keeps the stack clear of the retry pill */
   text-align: center;
   animation: rise 240ms var(--ease) both;
 }
 
 .verdict__label {
-  margin: 0;
-  font-size: 11px;
+  margin: 0 0 10px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
   text-transform: uppercase;
   color: var(--cyan);
 }
@@ -461,41 +540,92 @@ button {
 .verdict__value {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin: 2px 0 0;
+  justify-content: center;
+  gap: 9px;
+  margin: 0;
 }
 
 .verdict__number {
-  font-size: clamp(66px, 24vw, 132px);
+  font-size: clamp(52px, 14vw, 104px);
   font-weight: 700;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 46px rgb(34 211 238 / 62%);
+  text-shadow: 0 0 46px rgb(34 211 238 / 55%);
 }
 
 .verdict.is-fail .verdict__number {
   color: var(--danger);
-  text-shadow: 0 0 46px rgb(251 77 99 / 45%);
+  text-shadow: 0 0 46px rgb(251 77 99 / 40%);
 }
 
 .verdict__unit {
-  font-size: 14px;
-  letter-spacing: 0.24em;
+  font-size: 13px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
+  white-space: nowrap;
+}
+
+/* --- quality meter ------------------------------------------------------ */
+
+.meter {
+  position: relative;
+  width: min(280px, 66vw);
+  height: 7px;
+  margin: 18px 0 0;
+  border-radius: 999px;
+  background: rgb(148 163 184 / 14%);
+  overflow: hidden;
+}
+
+.meter::after {
+  /* Four ticks, so the bar reads as a scale rather than a mood. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(20% - 1px),
+    rgb(4 5 11 / 65%) calc(20% - 1px) 20%
+  );
+}
+
+.meter__fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow: 0 0 14px rgb(34 211 238 / 70%);
+  transform-origin: left center;
+  transition: width 420ms var(--ease);
+}
+
+.meter[data-band='mid'] .meter__fill {
+  background: var(--amber);
+  box-shadow: 0 0 14px rgb(245 181 68 / 60%);
+}
+
+.meter[data-band='poor'] .meter__fill {
+  background: var(--danger);
+  box-shadow: 0 0 14px rgb(251 77 99 / 55%);
 }
 
 .verdict__detail {
-  margin: 8px 0 0;
+  margin: 16px 0 0;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
 
+.verdict__detail:empty {
+  display: none;
+}
+
 .verdict__best {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -506,44 +636,44 @@ button {
   color: var(--cyan);
 }
 
-/* --- retry, placed wherever the finger already is ----------------------- */
+/* --- retry, in the thumb band, on the side the hand is already on -------- */
 
-.again {
+.retry {
   position: fixed;
-  top: var(--tap-y, 78%);
+  bottom: max(7vh, calc(28px + env(safe-area-inset-bottom)));
   left: var(--tap-x, 50%);
   z-index: 20;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 108px;
-  height: 108px;
-  margin: 0;
-  border: 1px solid var(--cyan-line);
-  border-radius: 50%;
-  background: rgb(34 211 238 / 10%);
-  box-shadow:
-    0 0 0 10px rgb(34 211 238 / 4%),
-    0 20px 60px -26px rgb(34 211 238 / 90%);
-  transform: translate(-50%, -50%);
+  gap: 9px;
+  transform: translateX(-50%);
   animation: pop 260ms var(--ease) both;
 }
 
-.again__label {
-  font-size: 12px;
+.again {
+  min-width: 172px;
+  padding: 17px 30px;
+  border: 1px solid var(--cyan-line);
+  border-radius: 999px;
+  background: rgb(34 211 238 / 12%);
+  box-shadow:
+    0 0 0 9px rgb(34 211 238 / 4%),
+    0 20px 60px -26px rgb(34 211 238 / 90%);
+  font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.24em;
-  text-indent: 0.24em;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
   text-transform: uppercase;
   color: var(--cyan-soft);
+  white-space: nowrap;
 }
 
-.again__hint {
-  font-size: 8.5px;
+.retry__hint {
+  margin: 0;
+  font-size: 10px;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgb(110 231 249 / 45%);
+  color: var(--muted-deep);
+  text-align: center;
 }
 
 /* --- the flash ---------------------------------------------------------- */
@@ -555,13 +685,19 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Flat white: a solid-colour layer needs no rasterisation, so turning it on
-     costs a compositor commit and nothing else. */
-  background: #fff;
+  /* A disc plus a gentle wash rather than a full white screen: after minutes
+     of staring into near-black, a whole screen of #fff is painful, and the
+     signal is just as unmissable when it lands where the eye already is. */
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgb(226 245 255 / 22%),
+    rgb(226 245 255 / 6%) 46%,
+    rgb(226 245 255 / 3%) 100%
+  );
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
-  transition: opacity 120ms var(--ease);
+  transition: opacity 140ms var(--ease);
 }
 
 .flash.is-on {
@@ -571,6 +707,16 @@ button {
   transition: none;
 }
 
+.flash__disc {
+  display: flex;
+  width: clamp(190px, 54vmin, 430px);
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eaf7ff;
+}
+
 .flash__word {
   font-size: 15px;
   font-weight: 700;
@@ -578,23 +724,13 @@ button {
   text-indent: 0.4em;
   text-transform: uppercase;
   color: #0b3b45;
-  opacity: 0;
-}
-
-.flash.is-hold .flash__word {
-  opacity: 1;
 }
 
 /* --- motion ------------------------------------------------------------- */
 
-@keyframes breathe {
-  from {
-    transform: scale(0.94);
-    opacity: 0.72;
-  }
+@keyframes spin {
   to {
-    transform: scale(1.06);
-    opacity: 1;
+    transform: rotate(360deg);
   }
 }
 
@@ -612,11 +748,11 @@ button {
 @keyframes pop {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
+    transform: translateX(-50%) scale(0.86);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateX(-50%) scale(1);
   }
 }
 
@@ -648,5 +784,9 @@ button {
 
   .mode {
     padding: 12px 15px;
+  }
+
+  .verdict {
+    padding-bottom: 78px;
   }
 }
