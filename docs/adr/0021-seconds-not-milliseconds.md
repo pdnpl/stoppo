@@ -29,10 +29,16 @@ a reaction game where `0.21` and `0.21` are different rounds would be absurd.
 `formatSeconds` takes the separator from the copy, so it is a translation
 decision rather than a hard-coded assumption.
 
-**The chosen interval keeps its whole number.** The Lock picker offers `4 s`,
-not `4,000 s` — that value is a choice the player made, not a measurement, and
-three decimals on it would be noise. The `target 3.000s · you 3.142s` line keeps
+**The chosen interval keeps its whole number.** The Lock picker offers `4s`,
+not `4,000s` — that value is a choice the player made, not a measurement, and
+three decimals on it would be noise. The `cel 3,000s · Ty 3,142s` line keeps
 three decimals on both sides, because the two are being compared.
+
+**The symbol sits tight against its number** — `0,214s`, not `0,214 s`. SI and
+Polish typography both call for the space; the repository owner asked for it
+closed up, it is common in interfaces, and it reads cleanly at the sizes this
+game prints. A test pins it, matching a digit followed by whitespace and a lone
+`s`, which leaves the spelled-out `seconds` and `sekundy` alone.
 
 Internally nothing changes: the state machine, the scores and the stored records
 are all still milliseconds. This is a presentation decision and lives at the

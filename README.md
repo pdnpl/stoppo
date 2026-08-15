@@ -18,7 +18,7 @@ footer of the home screen.
 | **Count**  | You are told an interval (2–10s, random). The flash starts it. Count it in the dark. | Overshoot             |
 | **Lock**   | The same, on an interval you choose and keep, so you can train one number.           | Overshoot, per target |
 
-Everything measured is shown in **seconds to three decimals** — `0.214 s`, not
+Everything measured is shown in **seconds to three decimals** — `0.214s`, not
 `214 ms`. Same number, no jargon, and Polish gets its comma
 ([ADR 21](docs/adr/0021-seconds-not-milliseconds.md)).
 
