@@ -10,13 +10,17 @@ straight from Cloudflare's edge.
 ## The three modes
 
 Plays in **English and Polish**, picked from your browser and switchable in the
-corner of the home screen.
+footer of the home screen.
 
-| Mode       | What happens                                                                         | What it scores            |
-| ---------- | ------------------------------------------------------------------------------------ | ------------------------- |
-| **Reflex** | Dark for 1–5s, then a disc of light lands in the centre. Press.                      | Reaction time, ms         |
-| **Count**  | You are told an interval (2–10s, random). The flash starts it. Count it in the dark. | Overshoot, ms             |
-| **Lock**   | The same, on an interval you choose and keep, so you can train one number.           | Overshoot, ms, per target |
+| Mode       | What happens                                                                         | What it scores        |
+| ---------- | ------------------------------------------------------------------------------------ | --------------------- |
+| **Reflex** | Dark for 1–5s, then a disc of light lands in the centre. Press.                      | Reaction time         |
+| **Count**  | You are told an interval (2–10s, random). The flash starts it. Count it in the dark. | Overshoot             |
+| **Lock**   | The same, on an interval you choose and keep, so you can train one number.           | Overshoot, per target |
+
+Everything measured is shown in **seconds to three decimals** — `0.214 s`, not
+`214 ms`. Same number, no jargon, and Polish gets its comma
+([ADR 21](docs/adr/0021-seconds-not-milliseconds.md)).
 
 **Tapping a mode starts it.** There is no Play button — the mode card is the
 start button, and in Lock the seconds chips are

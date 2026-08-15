@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  formatMs,
   formatSeconds,
   formatTargetSeconds,
   gradeError,
@@ -63,17 +62,31 @@ describe('scoreOf', () => {
 });
 
 describe('formatting', () => {
-  it('shows milliseconds whole', () => {
-    expect(formatMs(183.6)).toBe('184');
-    expect(formatMs(0.2)).toBe('0');
-  });
-
-  it('shows seconds to millisecond precision', () => {
+  it('says every measured value in seconds, to the millisecond', () => {
+    expect(formatSeconds(214)).toBe('0.214');
     expect(formatSeconds(3_184)).toBe('3.184');
     expect(formatSeconds(3_000)).toBe('3.000');
+    expect(formatSeconds(0)).toBe('0.000');
   });
 
-  it('shows targets without noise', () => {
+  it('rounds to the millisecond rather than showing float noise', () => {
+    expect(formatSeconds(183.6)).toBe('0.184');
+    expect(formatSeconds(0.2)).toBe('0.000');
+  });
+
+  it('writes the separator the locale asked for', () => {
+    expect(formatSeconds(214, ',')).toBe('0,214');
+    expect(formatSeconds(3_184, ',')).toBe('3,184');
+    expect(formatSeconds(214, '.')).toBe('0.214');
+  });
+
+  it('never prints more than five characters, so it fits inside the disc', () => {
+    for (const ms of [0, 1, 999, 1_000, 9_999]) {
+      expect(formatSeconds(ms).length).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('shows chosen intervals without noise', () => {
     expect(formatTargetSeconds(6_000)).toBe('6');
     expect(formatTargetSeconds(2_000)).toBe('2');
   });

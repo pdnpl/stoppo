@@ -20,7 +20,7 @@ import {
   submitScore,
 } from './game/records';
 import { cryptoRandom } from './game/rng';
-import { formatMs, formatTargetSeconds, scoreOf } from './game/scoring';
+import { formatSeconds, formatTargetSeconds, scoreOf } from './game/scoring';
 import type { GameState, Mode, Outcome, RoundPlan } from './game/types';
 import { COPY, LOCALES, detectLocale } from './i18n/copy';
 import type { Copy, Locale } from './i18n/copy';
@@ -204,7 +204,7 @@ function renderBests(): void {
     if (best === null) {
       node.textContent = copy.bestNone;
     } else {
-      const value = formatMs(best);
+      const value = formatSeconds(best, copy.decimal);
       node.textContent =
         mode === 'reflex' ? copy.bestReflex(value) : copy.bestOff(value);
     }
@@ -372,7 +372,7 @@ function buildChips(): void {
     chip.type = 'button';
     chip.className = 'chip';
     chip.dataset.target = `${ms}`;
-    chip.textContent = `${formatTargetSeconds(ms)}s`;
+    chip.textContent = copy.seconds(formatTargetSeconds(ms));
     chip.addEventListener('click', () => {
       pressSeconds(ms);
     });

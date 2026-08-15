@@ -31,7 +31,9 @@ export interface Copy {
   flashStart: string;
 
   grades: Record<Grade, string>;
-  unitMs: string;
+  /** Decimal separator: a full stop in English, a comma in Polish. */
+  decimal: string;
+  unitSeconds: string;
   unitLate: string;
   unitShort: string;
 
@@ -104,9 +106,10 @@ const EN: Copy = {
     steady: 'Steady',
     slack: 'Warming up',
   },
-  unitMs: 'ms',
-  unitLate: 'ms late',
-  unitShort: 'ms early',
+  decimal: '.',
+  unitSeconds: 'seconds',
+  unitLate: 'seconds late',
+  unitShort: 'seconds early',
 
   falseStart: 'False start',
   falseStartDetail: 'You went before the light.',
@@ -116,20 +119,20 @@ const EN: Copy = {
   againstTarget: (target, you) => `target ${target}s · you ${you}s`,
 
   firstRound: 'your first round in this mode',
-  newRecordBy: (better) => `new record — ${better} ms better`,
+  newRecordBy: (better) => `new record — ${better} s better`,
   sameAsRecord: 'exactly your record',
-  offBest: (worse, best) => `${worse} ms off your best of ${best} ms`,
+  offBest: (worse, best) => `${worse} s off your best of ${best} s`,
   ringLabel: (now, best) =>
-    `${now} against your best of ${best}. The ring is the record.`,
+    `${now} seconds against your best of ${best}. The ring is the record.`,
 
   bestNone: '—',
-  bestReflex: (value) => `${value} ms`,
-  bestOff: (value) => `${value} ms off`,
+  bestReflex: (value) => `${value} s`,
+  bestOff: (value) => `${value} s off`,
 
-  announceReaction: (value, grade) => `${value} milliseconds. ${grade}.`,
-  announceLate: (value, grade) => `${value} milliseconds late. ${grade}.`,
+  announceReaction: (value, grade) => `${value} seconds. ${grade}.`,
+  announceLate: (value, grade) => `${value} seconds late. ${grade}.`,
   announceFalseStart: 'False start. You went before the light.',
-  announceTooEarly: (value) => `Too early by ${value} milliseconds.`,
+  announceTooEarly: (value) => `Too early by ${value} seconds.`,
   announceDropped: 'Round dropped. No press came.',
 };
 
@@ -178,9 +181,10 @@ const PL: Copy = {
     steady: 'Równo',
     slack: 'Rozgrzewka',
   },
-  unitMs: 'ms',
-  unitLate: 'ms po czasie',
-  unitShort: 'ms za wcześnie',
+  decimal: ',',
+  unitSeconds: 'sekundy',
+  unitLate: 'sekundy po czasie',
+  unitShort: 'sekundy za wcześnie',
 
   falseStart: 'Falstart',
   falseStartDetail: 'Kliknięcie przed błyskiem.',
@@ -190,20 +194,20 @@ const PL: Copy = {
   againstTarget: (target, you) => `cel ${target} s · Ty ${you} s`,
 
   firstRound: 'pierwszy wynik w tym trybie',
-  newRecordBy: (better) => `nowy rekord — o ${better} ms lepiej`,
+  newRecordBy: (better) => `nowy rekord — o ${better} s lepiej`,
   sameAsRecord: 'dokładnie tyle co rekord',
-  offBest: (worse, best) => `o ${worse} ms gorzej od rekordu ${best} ms`,
+  offBest: (worse, best) => `o ${worse} s gorzej od rekordu ${best} s`,
   ringLabel: (now, best) =>
-    `${now} przy rekordzie ${best}. Pierścień to rekord.`,
+    `${now} sekundy przy rekordzie ${best}. Pierścień to rekord.`,
 
   bestNone: '—',
-  bestReflex: (value) => `${value} ms`,
-  bestOff: (value) => `${value} ms błędu`,
+  bestReflex: (value) => `${value} s`,
+  bestOff: (value) => `${value} s błędu`,
 
-  announceReaction: (value, grade) => `${value} milisekund. ${grade}.`,
-  announceLate: (value, grade) => `${value} milisekund po czasie. ${grade}.`,
+  announceReaction: (value, grade) => `${value} sekundy. ${grade}.`,
+  announceLate: (value, grade) => `${value} sekundy po czasie. ${grade}.`,
   announceFalseStart: 'Falstart. Kliknięcie przed błyskiem.',
-  announceTooEarly: (value) => `Za wcześnie o ${value} milisekund.`,
+  announceTooEarly: (value) => `Za wcześnie o ${value} sekundy.`,
   announceDropped: 'Runda przepadła. Nikt nie kliknął.',
 };
 

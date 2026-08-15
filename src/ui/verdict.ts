@@ -1,4 +1,4 @@
-import { formatMs, formatSeconds, gradeOf } from '../game/scoring';
+import { formatSeconds, gradeOf } from '../game/scoring';
 import type { Outcome } from '../game/types';
 import type { Copy } from '../i18n/copy';
 
@@ -20,28 +20,28 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
 
   switch (outcome.kind) {
     case 'reaction': {
-      const ms = formatMs(outcome.reactionMs);
+      const value = formatSeconds(outcome.reactionMs, copy.decimal);
       return {
         label: headline,
-        number: ms,
-        unit: copy.unitMs,
+        number: value,
+        unit: copy.unitSeconds,
         detail: '',
         fail: false,
-        announce: copy.announceReaction(ms, headline),
+        announce: copy.announceReaction(value, headline),
       };
     }
     case 'timed': {
-      const ms = formatMs(outcome.errorMs);
+      const value = formatSeconds(outcome.errorMs, copy.decimal);
       return {
         label: headline,
-        number: ms,
+        number: value,
         unit: copy.unitLate,
         detail: copy.againstTarget(
-          formatSeconds(outcome.targetMs),
-          formatSeconds(outcome.elapsedMs),
+          formatSeconds(outcome.targetMs, copy.decimal),
+          formatSeconds(outcome.elapsedMs, copy.decimal),
         ),
         fail: false,
-        announce: copy.announceLate(ms, headline),
+        announce: copy.announceLate(value, headline),
       };
     }
     case 'falseStart':
@@ -54,17 +54,17 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
         announce: copy.announceFalseStart,
       };
     case 'tooEarly': {
-      const ms = formatMs(outcome.shortByMs);
+      const value = formatSeconds(outcome.shortByMs, copy.decimal);
       return {
         label: copy.tooEarly,
         number: '',
         unit: '',
-        detail: `${ms} ${copy.unitShort} · ${copy.againstTarget(
-          formatSeconds(outcome.targetMs),
-          formatSeconds(outcome.elapsedMs),
+        detail: `${value} ${copy.unitShort} · ${copy.againstTarget(
+          formatSeconds(outcome.targetMs, copy.decimal),
+          formatSeconds(outcome.elapsedMs, copy.decimal),
         )}`,
         fail: true,
-        announce: copy.announceTooEarly(ms),
+        announce: copy.announceTooEarly(value),
       };
     }
     case 'abandoned':
@@ -120,9 +120,9 @@ export function recordView(
     Math.max(score / previousBest, DISC_MIN_RATIO),
     DISC_MAX_RATIO,
   );
-  const delta = formatMs(Math.abs(score - previousBest));
-  const best = formatMs(previousBest);
-  const label = copy.ringLabel(formatMs(score), best);
+  const delta = formatSeconds(Math.abs(score - previousBest), copy.decimal);
+  const best = formatSeconds(previousBest, copy.decimal);
+  const label = copy.ringLabel(formatSeconds(score, copy.decimal), best);
 
   if (score < previousBest) {
     return { ratio, line: copy.newRecordBy(delta), beats: true, label };

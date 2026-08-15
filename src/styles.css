@@ -640,7 +640,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--dial-size) * 0.17);
+  /* Sized for the longest string the game can print — `9,999` — inside the
+     smallest disc the clamp allows. */
+  font-size: calc(var(--dial-size) * 0.145);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.035em;

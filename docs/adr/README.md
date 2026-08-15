@@ -30,3 +30,4 @@ old one superseded.
 | [0018](0018-the-record-ring-replaces-the-meter.md)        | The record ring replaces the quality meter             | Accepted                                                      |
 | [0019](0019-one-centred-control-band.md)                  | One centred control band along the bottom of the stage | Accepted                                                      |
 | [0020](0020-the-interval-is-a-number-again.md)            | The interval is a number again, under a clear wait     | Accepted                                                      |
+| [0021](0021-seconds-not-milliseconds.md)                  | Say seconds, not milliseconds                          | Accepted                                                      |
