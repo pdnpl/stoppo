@@ -4,6 +4,10 @@ dist/
 # Personal Claude Code overrides; the shared config is .claude/settings.json
 .claude/settings.local.json
 
+# Scratch databases and caches that local tooling drops into the working tree.
+# Nothing under here belongs to the game.
+.claude/data/
+
 coverage/
 .wrangler/
 .dev.vars
