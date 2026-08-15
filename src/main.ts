@@ -23,7 +23,8 @@ import { formatMs, formatTargetSeconds, scoreOf } from './game/scoring';
 import type { GameState, Mode, Outcome, RoundPlan } from './game/types';
 import { COPY, LOCALES, detectLocale } from './i18n/copy';
 import type { Copy, Locale } from './i18n/copy';
-import { verdictView } from './ui/verdict';
+import { recordView, verdictView } from './ui/verdict';
+import type { RecordView } from './ui/verdict';
 
 function el(id: string): HTMLElement {
   const node = document.getElementById(id);
@@ -39,10 +40,17 @@ function button(id: string): HTMLButtonElement {
   return node;
 }
 
+function svgEl(selector: string): SVGElement {
+  const node = document.querySelector(selector);
+  if (!(node instanceof SVGElement)) {
+    throw new Error(`${selector} is not an SVG element`);
+  }
+  return node;
+}
+
 const home = el('home');
 const stage = el('stage');
 const back = button('back');
-const play = button('play');
 const cue = el('cue');
 const cueSub = el('cueSub');
 const counting = el('counting');
@@ -50,10 +58,10 @@ const verdict = el('verdict');
 const verdictLabel = el('verdictLabel');
 const verdictNumber = el('verdictNumber');
 const verdictUnit = el('verdictUnit');
+const verdictRecord = el('verdictRecord');
 const verdictDetail = el('verdictDetail');
-const verdictBest = el('verdictBest');
-const meter = el('meter');
-const meterFill = el('meterFill');
+const dial = el('dial');
+const dialDisc = svgEl('#dialDisc');
 const retry = el('retry');
 const again = button('again');
 const againHint = el('againHint');
@@ -61,14 +69,13 @@ const flash = el('flash');
 const flashWord = el('flashWord');
 const live = el('live');
 const lockrow = el('lockrow');
-const intervalLabel = el('intervalLabel');
+const secondsLabel = el('secondsLabel');
 const chips = el('chips');
 const modes = el('modes');
 const lang = el('lang');
 const tagline = el('tagline');
-const playLabel = el('playLabel');
-const playHint = el('playHint');
 const fineprint = el('fineprint');
+const spaceHint = el('spaceHint');
 
 const modeButtons = Array.from(
   document.querySelectorAll<HTMLButtonElement>('.mode'),
@@ -85,6 +92,11 @@ const nameNodes = Array.from(
 const descNodes = Array.from(
   document.querySelectorAll<HTMLElement>('[data-desc]'),
 );
+
+const lockButton = modeButtons.find((node) => node.dataset.mode === 'lock');
+
+/** The ring radius in the dial's own coordinates; the disc is a multiple of it. */
+const RING_RADIUS = 62;
 
 const MODES: readonly Mode[] = ['reflex', 'count', 'lock'];
 
@@ -172,18 +184,20 @@ function placeRetry(): void {
   retry.style.setProperty('--tap-x', `${Math.round(x)}px`);
 }
 
-function renderMeter(quality: number | null): void {
-  if (quality === null) {
-    meter.hidden = true;
-    return;
-  }
+/**
+ * The ring is the record, the disc is this round. Fitting inside means you beat
+ * it — which is a question anyone can answer without knowing what a millisecond
+ * is.
+ */
+function renderDial(view: RecordView): void {
+  dial.classList.toggle('is-first', view.ratio === null);
+  dial.classList.toggle('is-record', view.beats);
+  dialDisc.setAttribute('r', `${(view.ratio ?? 1) * RING_RADIUS}`);
+  dial.setAttribute('aria-label', view.label);
 
-  const percent = Math.round(quality * 100);
-  meter.hidden = false;
-  meter.dataset.band =
-    quality >= 0.6 ? 'good' : quality >= 0.3 ? 'mid' : 'poor';
-  meter.setAttribute('aria-valuenow', `${percent}`);
-  meterFill.style.width = `${percent}%`;
+  verdictRecord.textContent = view.line;
+  verdictRecord.classList.toggle('is-better', view.beats);
+  verdictRecord.classList.toggle('is-neutral', view.ratio === null);
 }
 
 function renderBests(): void {
@@ -214,25 +228,17 @@ function settled(outcome: Outcome, plan: RoundPlan): void {
   verdictNumber.textContent = view.number;
   verdictUnit.textContent = view.unit;
   verdictDetail.textContent = view.detail;
-  renderMeter(view.quality);
 
   const score = scoreOf(outcome);
-  let isRecord = false;
   if (score !== null) {
+    // Read the record *before* submitting, or a new best would be compared
+    // against itself and every record would read as a tie.
+    const previousBest = bestFor(records, plan.mode, plan.targetMs);
+    renderDial(recordView(score, previousBest, copy));
+
     const result = submitScore(records, plan.mode, plan.targetMs, score);
     records = result.records;
-    isRecord = result.isRecord;
-    if (isRecord) saveRecords(storage, records);
-  }
-
-  const best = bestFor(records, plan.mode, plan.targetMs);
-  verdictBest.classList.toggle('is-record', isRecord);
-  if (isRecord) {
-    verdictBest.textContent = copy.newBest;
-  } else if (best === null) {
-    verdictBest.textContent = '';
-  } else {
-    verdictBest.textContent = copy.best(`${formatMs(best)} ms`);
+    if (result.isRecord) saveRecords(storage, records);
   }
 
   placeRetry();
@@ -282,6 +288,70 @@ function goHome(): void {
 }
 
 /* -------------------------------------------------------------------------
+   Home
+   ------------------------------------------------------------------------- */
+
+/** Marks what the space bar would start, and which interval is loaded. */
+function markLast(): void {
+  for (const node of modeButtons) {
+    node.classList.toggle('is-last', node.dataset.mode === prefs.mode);
+  }
+  for (const chip of chips.children) {
+    const selected =
+      (chip as HTMLElement).dataset.target === `${prefs.lockTargetMs}`;
+    chip.classList.toggle('is-last', selected);
+  }
+  renderBests();
+}
+
+/** Tracked rather than read back off the DOM, where `hidden` is tri-state. */
+let secondsOpen = false;
+
+function setSecondsOpen(open: boolean): void {
+  secondsOpen = open;
+  lockrow.hidden = !open;
+  lockButton?.setAttribute('aria-expanded', `${open}`);
+}
+
+/**
+ * A mode card is the start button. Lock is the exception: it has a number to
+ * settle first, so it opens the seconds and each of those is the start button.
+ */
+function pressMode(mode: Mode): void {
+  if (mode === 'lock') {
+    setSecondsOpen(!secondsOpen);
+    return;
+  }
+  prefs = { ...prefs, mode };
+  savePrefs(storage, prefs);
+  markLast();
+  startPlaying();
+}
+
+function pressSeconds(targetMs: number): void {
+  prefs = { ...prefs, mode: 'lock', lockTargetMs: targetMs };
+  savePrefs(storage, prefs);
+  markLast();
+  startPlaying();
+}
+
+function buildChips(): void {
+  const fragment = document.createDocumentFragment();
+  for (let ms = MIN_TARGET_MS; ms <= MAX_TARGET_MS; ms += TARGET_STEP_MS) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.dataset.target = `${ms}`;
+    chip.textContent = `${formatTargetSeconds(ms)}s`;
+    chip.addEventListener('click', () => {
+      pressSeconds(ms);
+    });
+    fragment.append(chip);
+  }
+  chips.append(fragment);
+}
+
+/* -------------------------------------------------------------------------
    Language
    ------------------------------------------------------------------------- */
 
@@ -291,11 +361,10 @@ function applyCopy(): void {
   tagline.textContent = copy.tagline;
   lang.setAttribute('aria-label', copy.language);
   modes.setAttribute('aria-label', copy.modeGroup);
-  intervalLabel.textContent = copy.interval;
-  chips.setAttribute('aria-label', copy.interval);
-  playLabel.textContent = copy.play;
-  playHint.textContent = copy.playHint;
+  secondsLabel.textContent = copy.howManySeconds;
+  chips.setAttribute('aria-label', copy.howManySeconds);
   fineprint.textContent = copy.fineprint;
+  spaceHint.textContent = copy.spaceHint;
   back.textContent = copy.back;
   again.textContent = copy.again;
   againHint.textContent = copy.tapAnywhere;
@@ -326,56 +395,13 @@ function selectLocale(locale: Locale): void {
 }
 
 /* -------------------------------------------------------------------------
-   Home controls
+   Wiring
    ------------------------------------------------------------------------- */
-
-function selectMode(mode: Mode): void {
-  prefs = { ...prefs, mode };
-  savePrefs(storage, prefs);
-
-  for (const node of modeButtons) {
-    const selected = node.dataset.mode === mode;
-    node.classList.toggle('is-selected', selected);
-    node.setAttribute('aria-checked', `${selected}`);
-  }
-  lockrow.hidden = mode !== 'lock';
-  renderBests();
-}
-
-function selectTarget(targetMs: number): void {
-  prefs = { ...prefs, lockTargetMs: targetMs };
-  savePrefs(storage, prefs);
-
-  for (const chip of chips.children) {
-    const selected = (chip as HTMLElement).dataset.target === `${targetMs}`;
-    chip.classList.toggle('is-selected', selected);
-    chip.setAttribute('aria-checked', `${selected}`);
-  }
-  renderBests();
-}
-
-function buildChips(): void {
-  const fragment = document.createDocumentFragment();
-  for (let ms = MIN_TARGET_MS; ms <= MAX_TARGET_MS; ms += TARGET_STEP_MS) {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip';
-    chip.dataset.target = `${ms}`;
-    chip.textContent = `${formatTargetSeconds(ms)}s`;
-    chip.setAttribute('role', 'radio');
-    chip.setAttribute('aria-checked', 'false');
-    chip.addEventListener('click', () => {
-      selectTarget(ms);
-    });
-    fragment.append(chip);
-  }
-  chips.append(fragment);
-}
 
 for (const node of modeButtons) {
   node.addEventListener('click', () => {
     const mode = toMode(node.dataset.mode);
-    if (mode !== null) selectMode(mode);
+    if (mode !== null) pressMode(mode);
   });
 }
 
@@ -386,17 +412,11 @@ for (const node of langButtons) {
   });
 }
 
-play.addEventListener('click', startPlaying);
-
 back.addEventListener('pointerdown', (event) => {
   // Otherwise the press bubbles to the stage and is read as "again".
   event.stopPropagation();
 });
 back.addEventListener('click', goHome);
-
-/* -------------------------------------------------------------------------
-   Input
-   ------------------------------------------------------------------------- */
 
 stage.addEventListener(
   'pointerdown',
@@ -445,5 +465,5 @@ document.addEventListener('visibilitychange', () => {
 
 buildChips();
 applyCopy();
-selectMode(prefs.mode);
-selectTarget(prefs.lockTargetMs);
+markLast();
+setSecondsOpen(prefs.mode === 'lock');

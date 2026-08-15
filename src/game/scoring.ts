@@ -58,36 +58,6 @@ export function gradeOf(outcome: Outcome): Grade | null {
   }
 }
 
-/** Reaction times worth a full meter, and the point where it empties. */
-const REACTION_PERFECT_MS = 120;
-const REACTION_EMPTY_MS = 500;
-
-/** Counting error worth a full meter, and the point where it empties. */
-const ERROR_PERFECT_MS = 0;
-const ERROR_EMPTY_MS = 1_500;
-
-function ramp(value: number, perfect: number, empty: number): number {
-  const share = 1 - (value - perfect) / (empty - perfect);
-  return Math.min(Math.max(share, 0), 1);
-}
-
-/**
- * How good the round was, from 0 to 1, so a bar can say in one glance what
- * "184 ms" cannot say to someone who has never met a millisecond.
- */
-export function qualityOf(outcome: Outcome): number | null {
-  switch (outcome.kind) {
-    case 'reaction':
-      return ramp(outcome.reactionMs, REACTION_PERFECT_MS, REACTION_EMPTY_MS);
-    case 'timed':
-      return ramp(Math.abs(outcome.errorMs), ERROR_PERFECT_MS, ERROR_EMPTY_MS);
-    case 'falseStart':
-    case 'tooEarly':
-    case 'abandoned':
-      return null;
-  }
-}
-
 /** Milliseconds as a whole number: `184`. */
 export function formatMs(ms: number): string {
   return Math.round(ms).toString();

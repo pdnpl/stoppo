@@ -18,6 +18,14 @@ corner of the home screen.
 | **Count**  | You are told an interval (2–10s, random). The flash starts it. Count it in the dark. | Overshoot, ms             |
 | **Lock**   | The same, on an interval you choose and keep, so you can train one number.           | Overshoot, ms, per target |
 
+**Tapping a mode starts it.** There is no Play button — the mode card is the
+start button, and in Lock the seconds chips are
+([ADR 17](docs/adr/0017-the-mode-card-is-the-start-button.md)).
+
+**The result is a ring and a disc.** The ring is your record, the disc is this
+round, and fitting inside means you beat it. No scale to learn, which is the
+whole point ([ADR 18](docs/adr/0018-the-record-ring-replaces-the-meter.md)).
+
 Two rules hold the whole thing together:
 
 - **Randomise the stimulus, never the contract.** The mode is a promise you made

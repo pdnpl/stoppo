@@ -52,9 +52,12 @@ describe('copy', () => {
       expect(copy.waitThenCount('3')).toContain('3');
       expect(copy.countingNow('7')).toContain('7');
       expect(copy.againstTarget('3.000', '3.184')).toContain('3.184');
-      expect(copy.best('184 ms')).toContain('184');
       expect(copy.bestReflex('184')).toContain('184');
       expect(copy.bestOff('184')).toContain('184');
+      expect(copy.newRecordBy('16')).toContain('16');
+      expect(copy.offBest('28', '186')).toContain('28');
+      expect(copy.offBest('28', '186')).toContain('186');
+      expect(copy.ringLabel('214', '186')).toContain('186');
       expect(copy.announceReaction('184', 'Elite')).toContain('184');
       expect(copy.announceLate('184', 'Elite')).toContain('Elite');
       expect(copy.announceTooEarly('200')).toContain('200');

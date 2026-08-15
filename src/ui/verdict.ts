@@ -1,17 +1,15 @@
-import { formatMs, formatSeconds, gradeOf, qualityOf } from '../game/scoring';
+import { formatMs, formatSeconds, gradeOf } from '../game/scoring';
 import type { Outcome } from '../game/types';
 import type { Copy } from '../i18n/copy';
 
 export interface VerdictView {
   /** Grade or failure headline. */
   label: string;
-  /** The big numeral, or a dash when there is nothing honest to show. */
+  /** The number inside the disc. Empty when the round measured nothing. */
   number: string;
   unit: string;
   detail: string;
   fail: boolean;
-  /** 0–1 for the quality meter, `null` when the round measured nothing. */
-  quality: number | null;
   /** Sentence for the live region. */
   announce: string;
 }
@@ -19,7 +17,6 @@ export interface VerdictView {
 export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
   const grade = gradeOf(outcome);
   const headline = grade === null ? '' : copy.grades[grade];
-  const quality = qualityOf(outcome);
 
   switch (outcome.kind) {
     case 'reaction': {
@@ -30,7 +27,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
         unit: copy.unitMs,
         detail: '',
         fail: false,
-        quality,
         announce: copy.announceReaction(ms, headline),
       };
     }
@@ -45,44 +41,94 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
           formatSeconds(outcome.elapsedMs),
         ),
         fail: false,
-        quality,
         announce: copy.announceLate(ms, headline),
       };
     }
     case 'falseStart':
       return {
         label: copy.falseStart,
-        number: copy.noNumber,
+        number: '',
         unit: '',
         detail: copy.falseStartDetail,
         fail: true,
-        quality: null,
         announce: copy.announceFalseStart,
       };
     case 'tooEarly': {
       const ms = formatMs(outcome.shortByMs);
       return {
         label: copy.tooEarly,
-        number: ms,
-        unit: copy.unitShort,
-        detail: copy.againstTarget(
+        number: '',
+        unit: '',
+        detail: `${ms} ${copy.unitShort} · ${copy.againstTarget(
           formatSeconds(outcome.targetMs),
           formatSeconds(outcome.elapsedMs),
-        ),
+        )}`,
         fail: true,
-        quality: null,
         announce: copy.announceTooEarly(ms),
       };
     }
     case 'abandoned':
       return {
         label: copy.dropped,
-        number: copy.noNumber,
+        number: '',
         unit: '',
         detail: copy.droppedDetail,
         fail: true,
-        quality: null,
         announce: copy.announceDropped,
       };
   }
+}
+
+/**
+ * The disc can shrink to this share of the record ring, and grow to that one.
+ * Clamped at both ends: a wild round still has to fit on screen, and the number
+ * printed inside still has to fit in the disc.
+ */
+export const DISC_MIN_RATIO = 0.7;
+export const DISC_MAX_RATIO = 1.5;
+
+export interface RecordView {
+  /** Disc radius as a multiple of the ring, or `null` when there is no ring. */
+  ratio: number | null;
+  /** One line saying which side of the record this round landed on. */
+  line: string;
+  beats: boolean;
+  /** Description of the whole picture, for assistive technology. */
+  label: string;
+}
+
+/**
+ * Compares a round against the record it was chasing — the record as it stood
+ * *before* this round, otherwise a new best would forever be compared to
+ * itself and every record would read as a tie.
+ */
+export function recordView(
+  score: number,
+  previousBest: number | null,
+  copy: Copy,
+): RecordView {
+  if (previousBest === null || previousBest <= 0) {
+    return {
+      ratio: null,
+      line: copy.firstRound,
+      beats: false,
+      label: copy.firstRound,
+    };
+  }
+
+  const ratio = Math.min(
+    Math.max(score / previousBest, DISC_MIN_RATIO),
+    DISC_MAX_RATIO,
+  );
+  const delta = formatMs(Math.abs(score - previousBest));
+  const best = formatMs(previousBest);
+  const label = copy.ringLabel(formatMs(score), best);
+
+  if (score < previousBest) {
+    return { ratio, line: copy.newRecordBy(delta), beats: true, label };
+  }
+  if (score === previousBest) {
+    return { ratio, line: copy.sameAsRecord, beats: false, label };
+  }
+  return { ratio, line: copy.offBest(delta, best), beats: false, label };
 }

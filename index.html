@@ -32,27 +32,6 @@
 
     <main class="app">
       <section id="home" class="home">
-        <div id="lang" class="lang" role="radiogroup" aria-label="Language">
-          <button
-            type="button"
-            class="lang__btn"
-            data-locale="pl"
-            role="radio"
-            aria-checked="false"
-          >
-            PL
-          </button>
-          <button
-            type="button"
-            class="lang__btn"
-            data-locale="en"
-            role="radio"
-            aria-checked="false"
-          >
-            EN
-          </button>
-        </div>
-
         <div class="brand">
           <svg
             class="brand__mark"
@@ -86,36 +65,50 @@
           <p id="tagline" class="brand__tagline">Stop the clock.</p>
         </div>
 
-        <div id="modes" class="modes" role="radiogroup" aria-label="Game mode">
-          <button
-            type="button"
-            class="mode is-selected"
-            data-mode="reflex"
-            role="radio"
-            aria-checked="true"
-          >
-            <span class="mode__row">
-              <span class="mode__name" data-name="reflex">Reflex</span>
-              <span class="mode__best" data-best="reflex">—</span>
+        <div id="modes" class="modes" role="group" aria-label="Game mode">
+          <button type="button" class="mode is-last" data-mode="reflex">
+            <span class="mode__text">
+              <span class="mode__row">
+                <span class="mode__name" data-name="reflex">Reflex</span>
+                <span class="mode__best" data-best="reflex">—</span>
+              </span>
+              <span class="mode__desc" data-desc="reflex">
+                It lights up. You tap. Speed is all that counts.
+              </span>
             </span>
-            <span class="mode__desc" data-desc="reflex">
-              It lights up. You tap. Nothing else in your head.
+            <span class="mode__go" aria-hidden="true">
+              <svg class="icon icon-play" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 6l9 6-9 6z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </span>
           </button>
 
-          <button
-            type="button"
-            class="mode"
-            data-mode="count"
-            role="radio"
-            aria-checked="false"
-          >
-            <span class="mode__row">
-              <span class="mode__name" data-name="count">Count</span>
-              <span class="mode__best" data-best="count">—</span>
+          <button type="button" class="mode" data-mode="count">
+            <span class="mode__text">
+              <span class="mode__row">
+                <span class="mode__name" data-name="count">Count</span>
+                <span class="mode__best" data-best="count">—</span>
+              </span>
+              <span class="mode__desc" data-desc="count">
+                A random 2–10s to count out in the dark. Early is burnt.
+              </span>
             </span>
-            <span class="mode__desc" data-desc="count">
-              A random 2–10s to count out in the dark. Early is burnt.
+            <span class="mode__go" aria-hidden="true">
+              <svg class="icon icon-play" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9 6l9 6-9 6z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </span>
           </button>
 
@@ -123,35 +116,72 @@
             type="button"
             class="mode"
             data-mode="lock"
-            role="radio"
-            aria-checked="false"
+            aria-expanded="false"
+            aria-controls="lockrow"
           >
-            <span class="mode__row">
-              <span class="mode__name" data-name="lock">Lock</span>
-              <span class="mode__best" data-best="lock">—</span>
+            <span class="mode__text">
+              <span class="mode__row">
+                <span class="mode__name" data-name="lock">Lock</span>
+                <span class="mode__best" data-best="lock">—</span>
+              </span>
+              <span class="mode__desc" data-desc="lock">
+                Pick one number of seconds and practise it until you own it.
+              </span>
             </span>
-            <span class="mode__desc" data-desc="lock">
-              One interval you pick, over and over, until you own it.
+            <span class="mode__go" aria-hidden="true">
+              <svg class="icon icon-more" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </span>
           </button>
         </div>
 
         <div id="lockrow" class="lockrow" hidden>
-          <span id="intervalLabel" class="lockrow__label">Interval</span>
-          <div id="chips" class="chips" role="radiogroup" aria-label="Interval">
+          <span id="secondsLabel" class="lockrow__label">How many seconds</span>
+          <div
+            id="chips"
+            class="chips"
+            role="group"
+            aria-label="How many seconds"
+          >
             <!-- populated at runtime -->
           </div>
         </div>
-
-        <button type="button" id="play" class="play">
-          <span id="playLabel" class="play__label">Play</span>
-          <span id="playHint" class="play__hint">or press space</span>
-        </button>
 
         <p id="fineprint" class="fineprint">
           Plays bright flashes on a dark screen. Sit this one out if that is a
           problem for you.
         </p>
+
+        <div class="footer">
+          <div id="lang" class="lang" role="radiogroup" aria-label="Language">
+            <button
+              type="button"
+              class="lang__btn"
+              data-locale="pl"
+              role="radio"
+              aria-checked="false"
+            >
+              PL
+            </button>
+            <button
+              type="button"
+              class="lang__btn"
+              data-locale="en"
+              role="radio"
+              aria-checked="false"
+            >
+              EN
+            </button>
+          </div>
+          <p id="spaceHint" class="footer__hint">space starts your last mode</p>
+        </div>
       </section>
 
       <section
@@ -174,22 +204,35 @@
 
         <div id="verdict" class="verdict">
           <p id="verdictLabel" class="verdict__label"></p>
-          <p class="verdict__value">
-            <span id="verdictNumber" class="verdict__number">0</span>
-            <span id="verdictUnit" class="verdict__unit">ms</span>
-          </p>
-          <div
-            id="meter"
-            class="meter"
-            role="meter"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="0"
-          >
-            <span id="meterFill" class="meter__fill"></span>
+
+          <div id="dial" class="dial" role="img" aria-label="">
+            <svg
+              class="dial__svg"
+              viewBox="0 0 200 200"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle
+                id="dialRing"
+                class="dial__ring"
+                cx="100"
+                cy="100"
+                r="62"
+              />
+              <circle
+                id="dialDisc"
+                class="dial__disc"
+                cx="100"
+                cy="100"
+                r="62"
+              />
+            </svg>
+            <span id="verdictNumber" class="dial__number">0</span>
           </div>
+
+          <p id="verdictUnit" class="verdict__unit">ms</p>
+          <p id="verdictRecord" class="verdict__record"></p>
           <p id="verdictDetail" class="verdict__detail"></p>
-          <p id="verdictBest" class="verdict__best"></p>
         </div>
 
         <div id="retry" class="retry">
