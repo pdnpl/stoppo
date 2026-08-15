@@ -64,6 +64,30 @@ describe('copy', () => {
     }
   });
 
+  it('keeps the second symbol tight against its number', () => {
+    // A digit, whitespace, then a lone `s`. `seconds` and `sekundy` are words
+    // rather than the symbol, so the word boundary leaves them alone.
+    const loose = /\d\s+s\b/;
+
+    for (const locale of LOCALES) {
+      const copy = COPY[locale];
+      const rendered = [
+        copy.seconds('4'),
+        copy.countingNow('6'),
+        copy.againstTarget('3.000', '3.142'),
+        copy.newRecordBy('0.016'),
+        copy.offBest('0.028', '0.186'),
+        copy.bestReflex('0.214'),
+        copy.bestOff('0.310'),
+        copy.modes.count.desc,
+      ];
+
+      for (const text of rendered) {
+        expect(text, `${locale}: ${text}`).not.toMatch(loose);
+      }
+    }
+  });
+
   it('translates the mode names rather than leaving them English', () => {
     expect(COPY.pl.modes.reflex.name).not.toBe(COPY.en.modes.reflex.name);
     expect(COPY.pl.grades.elite).not.toBe(COPY.en.grades.elite);

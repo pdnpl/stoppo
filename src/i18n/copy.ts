@@ -119,15 +119,15 @@ const EN: Copy = {
   againstTarget: (target, you) => `target ${target}s · you ${you}s`,
 
   firstRound: 'your first round in this mode',
-  newRecordBy: (better) => `new record — ${better} s better`,
+  newRecordBy: (better) => `new record — ${better}s better`,
   sameAsRecord: 'exactly your record',
-  offBest: (worse, best) => `${worse} s off your best of ${best} s`,
+  offBest: (worse, best) => `${worse}s off your best of ${best}s`,
   ringLabel: (now, best) =>
     `${now} seconds against your best of ${best}. The ring is the record.`,
 
   bestNone: '—',
-  bestReflex: (value) => `${value} s`,
-  bestOff: (value) => `${value} s off`,
+  bestReflex: (value) => `${value}s`,
+  bestOff: (value) => `${value}s off`,
 
   announceReaction: (value, grade) => `${value} seconds. ${grade}.`,
   announceLate: (value, grade) => `${value} seconds late. ${grade}.`,
@@ -147,7 +147,7 @@ const PL: Copy = {
     },
     count: {
       name: 'Odliczanie',
-      desc: 'Losowe 2–10 s do odliczenia w ciemności. Za wcześnie = spalone.',
+      desc: 'Losowe 2–10s do odliczenia w ciemności. Za wcześnie = spalone.',
     },
     lock: {
       name: 'Trening',
@@ -168,8 +168,8 @@ const PL: Copy = {
   wait: 'Czekaj',
   waitReflex: 'nie klikaj, dopóki się nie zapali',
   waitBeforeCount: 'błysk to start — dopiero potem odliczasz',
-  seconds: (value) => `${value} s`,
-  countingNow: (seconds) => `liczysz ${seconds} s`,
+  seconds: (value) => `${value}s`,
+  countingNow: (seconds) => `liczysz ${seconds}s`,
   flashTap: 'Teraz',
   flashStart: 'Start',
 
@@ -191,18 +191,18 @@ const PL: Copy = {
   tooEarly: 'Za wcześnie',
   dropped: 'Przepadło',
   droppedDetail: 'Nikt nie kliknął. Runda przepadła.',
-  againstTarget: (target, you) => `cel ${target} s · Ty ${you} s`,
+  againstTarget: (target, you) => `cel ${target}s · Ty ${you}s`,
 
   firstRound: 'pierwszy wynik w tym trybie',
-  newRecordBy: (better) => `nowy rekord — o ${better} s lepiej`,
+  newRecordBy: (better) => `nowy rekord — o ${better}s lepiej`,
   sameAsRecord: 'dokładnie tyle co rekord',
-  offBest: (worse, best) => `o ${worse} s gorzej od rekordu ${best} s`,
+  offBest: (worse, best) => `o ${worse}s gorzej od rekordu ${best}s`,
   ringLabel: (now, best) =>
     `${now} sekundy przy rekordzie ${best}. Pierścień to rekord.`,
 
   bestNone: '—',
-  bestReflex: (value) => `${value} s`,
-  bestOff: (value) => `${value} s błędu`,
+  bestReflex: (value) => `${value}s`,
+  bestOff: (value) => `${value}s błędu`,
 
   announceReaction: (value, grade) => `${value} sekundy. ${grade}.`,
   announceLate: (value, grade) => `${value} sekundy po czasie. ${grade}.`,

@@ -121,7 +121,7 @@ describe('recordView', () => {
 
     expect(view.beats).toBe(true);
     expect(view.ratio).toBeLessThan(1);
-    expect(view.line).toBe('new record — 0.016 s better');
+    expect(view.line).toBe('new record — 0.016s better');
   });
 
   it('pushes the disc outside the ring when the round was worse', () => {
@@ -129,7 +129,7 @@ describe('recordView', () => {
 
     expect(view.beats).toBe(false);
     expect(view.ratio).toBeGreaterThan(1);
-    expect(view.line).toBe('0.028 s off your best of 0.186 s');
+    expect(view.line).toBe('0.028s off your best of 0.186s');
   });
 
   it('calls a tie a tie rather than a record', () => {
@@ -154,7 +154,7 @@ describe('recordView', () => {
 
     expect(view.label).toContain('0,214');
     expect(view.label).toContain('0,186');
-    expect(view.line).toBe('o 0,028 s gorzej od rekordu 0,186 s');
+    expect(view.line).toBe('o 0,028s gorzej od rekordu 0,186s');
   });
 
   it('counts in seconds in every line, in both languages', () => {
