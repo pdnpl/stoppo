@@ -348,20 +348,25 @@ button {
   color: var(--cyan-soft);
 }
 
-/* Only worth saying where there is a keyboard to say it about. */
-.footer__hint {
-  display: none;
-  margin: 0;
+/* Destructive, so it asks once before it does anything. */
+.clear {
+  padding: 7px 14px;
+  border-radius: 999px;
   font-size: 10px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted-deep);
+  transition: color 160ms var(--ease);
 }
 
-@media (pointer: fine) {
-  .footer__hint {
-    display: block;
+@media (hover: hover) {
+  .clear:hover {
+    color: var(--muted);
   }
+}
+
+.clear.is-armed {
+  color: var(--danger);
 }
 
 /* --- stage -------------------------------------------------------------- */
@@ -378,27 +383,29 @@ button {
   -webkit-user-select: none;
 }
 
+/* Lives in the bottom band with the retry, not dimmed into a corner where
+   nobody found it. */
 .back {
-  position: absolute;
-  top: max(16px, env(safe-area-inset-top));
-  left: var(--pad-edge);
-  padding: 8px 12px;
+  margin-top: 3px;
+  padding: 9px 18px;
+  border: 1px solid rgb(148 163 184 / 22%);
   border-radius: 999px;
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.24em;
+  text-indent: 0.24em;
   text-transform: uppercase;
-  color: var(--muted-deep);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 220ms var(--ease);
+  color: var(--muted);
+  transition:
+    color 160ms var(--ease),
+    border-color 160ms var(--ease);
 }
 
-.stage[data-phase='result'] .back,
-.stage[data-phase='falseStart'] .back,
-.stage[data-phase='tooEarly'] .back,
-.stage[data-phase='abandoned'] .back {
-  opacity: 1;
-  pointer-events: auto;
+@media (hover: hover) {
+  .back:hover {
+    border-color: rgb(148 163 184 / 42%);
+    color: var(--ink);
+  }
 }
 
 /* --- waiting ------------------------------------------------------------ */
@@ -463,6 +470,23 @@ button {
   display: none;
 }
 
+/* The interval, big enough to actually read. Safe to make it the largest thing
+   here now that a spinner and the word "wait" are shouting louder. */
+.cue-target {
+  margin: 4px 0 0;
+  font-size: clamp(44px, 13vmin, 76px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cyan-soft);
+  text-shadow: 0 0 36px rgb(34 211 238 / 55%);
+}
+
+.cue-target:empty {
+  display: none;
+}
+
 /* Absolutely placed so switching to it costs no layout, and deliberately
    motionless: a moving pixel here is a clock the player could read. */
 .counting {
@@ -470,9 +494,9 @@ button {
   top: 50%;
   left: 50%;
   margin: 0;
-  font-size: 13px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: clamp(20px, 5.5vmin, 30px);
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
   color: var(--muted-deep);
   opacity: 0;
   transform: translate(-50%, -50%);
@@ -528,7 +552,7 @@ button {
 .verdict {
   flex-direction: column;
   align-items: center;
-  padding-bottom: 96px; /* keeps the stack clear of the retry pill */
+  padding-bottom: 132px; /* keeps the stack clear of the bottom band */
   text-align: center;
   animation: rise 240ms var(--ease) both;
 }
@@ -661,12 +685,12 @@ button {
   display: none;
 }
 
-/* --- retry, in the thumb band, on the side the hand is already on -------- */
+/* --- one centred control band along the bottom -------------------------- */
 
 .retry {
   position: fixed;
-  bottom: max(6vh, calc(24px + env(safe-area-inset-bottom)));
-  left: var(--tap-x, 50%);
+  bottom: max(5vh, calc(20px + env(safe-area-inset-bottom)));
+  left: 50%;
   z-index: 20;
   flex-direction: column;
   align-items: center;
@@ -813,10 +837,14 @@ button {
   }
 
   .verdict {
-    padding-bottom: 84px;
+    padding-bottom: 118px;
   }
 
   .dial {
     --dial-size: clamp(150px, 34vmin, 200px);
+  }
+
+  .cue-target {
+    font-size: clamp(38px, 10vmin, 58px);
   }
 }

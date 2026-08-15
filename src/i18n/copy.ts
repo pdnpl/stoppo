@@ -13,7 +13,9 @@ export interface Copy {
   modes: Record<Mode, { name: string; desc: string }>;
   howManySeconds: string;
   fineprint: string;
-  spaceHint: string;
+  clearRecords: string;
+  clearRecordsConfirm: string;
+  clearRecordsDone: string;
 
   back: string;
   again: string;
@@ -21,7 +23,9 @@ export interface Copy {
 
   wait: string;
   waitReflex: string;
-  waitThenCount: (seconds: string) => string;
+  /** Ends where the number begins — the seconds are their own element. */
+  waitBeforeCount: string;
+  seconds: (value: string) => string;
   countingNow: (seconds: string) => string;
   flashTap: string;
   flashStart: string;
@@ -76,7 +80,9 @@ const EN: Copy = {
   howManySeconds: 'How many seconds',
   fineprint:
     'Plays bright flashes on a dark screen. Sit this one out if that is a problem for you.',
-  spaceHint: 'space starts your last mode',
+  clearRecords: 'Clear records',
+  clearRecordsConfirm: 'Sure?',
+  clearRecordsDone: 'Cleared',
 
   back: 'Modes',
   again: 'Again',
@@ -84,8 +90,8 @@ const EN: Copy = {
 
   wait: 'Wait',
   waitReflex: 'do not press until it lights up',
-  waitThenCount: (seconds) =>
-    `the flash starts it — then you count ${seconds}s`,
+  waitBeforeCount: 'the flash starts it — then you count',
+  seconds: (value) => `${value}s`,
   countingNow: (seconds) => `counting ${seconds}s`,
   flashTap: 'Tap',
   flashStart: 'Start',
@@ -148,7 +154,9 @@ const PL: Copy = {
   howManySeconds: 'Ile sekund',
   fineprint:
     'Gra pokazuje jasne błyski na ciemnym ekranie. Odpuść, jeśli to dla Ciebie problem.',
-  spaceHint: 'spacja startuje ostatni tryb',
+  clearRecords: 'Kasuj rekordy',
+  clearRecordsConfirm: 'Na pewno?',
+  clearRecordsDone: 'Skasowane',
 
   back: 'Tryby',
   again: 'Jeszcze raz',
@@ -156,8 +164,8 @@ const PL: Copy = {
 
   wait: 'Czekaj',
   waitReflex: 'nie klikaj, dopóki się nie zapali',
-  waitThenCount: (seconds) =>
-    `błysk to start — dopiero potem liczysz ${seconds} s`,
+  waitBeforeCount: 'błysk to start — dopiero potem odliczasz',
+  seconds: (value) => `${value} s`,
   countingNow: (seconds) => `liczysz ${seconds} s`,
   flashTap: 'Teraz',
   flashStart: 'Start',
