@@ -5,9 +5,11 @@ import type { Copy } from '../i18n/copy';
 export interface VerdictView {
   /** Grade or failure headline. */
   label: string;
-  /** The number inside the disc. Empty when the round measured nothing. */
+  /**
+   * The number inside the disc, in seconds. Empty when the round measured
+   * nothing — the unit is hidden along with it.
+   */
   number: string;
-  unit: string;
   detail: string;
   fail: boolean;
   /** Sentence for the live region. */
@@ -24,7 +26,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
       return {
         label: headline,
         number: value,
-        unit: copy.unitSeconds,
         detail: '',
         fail: false,
         announce: copy.announceReaction(value, headline),
@@ -35,7 +36,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
       return {
         label: headline,
         number: value,
-        unit: copy.unitLate,
         detail: copy.againstTarget(
           formatSeconds(outcome.targetMs, copy.decimal),
           formatSeconds(outcome.elapsedMs, copy.decimal),
@@ -48,7 +48,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
       return {
         label: copy.falseStart,
         number: '',
-        unit: '',
         detail: copy.falseStartDetail,
         fail: true,
         announce: copy.announceFalseStart,
@@ -58,7 +57,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
       return {
         label: copy.tooEarly,
         number: '',
-        unit: '',
         detail: `${value} ${copy.unitShort} · ${copy.againstTarget(
           formatSeconds(outcome.targetMs, copy.decimal),
           formatSeconds(outcome.elapsedMs, copy.decimal),
@@ -71,7 +69,6 @@ export function verdictView(outcome: Outcome, copy: Copy): VerdictView {
       return {
         label: copy.dropped,
         number: '',
-        unit: '',
         detail: copy.droppedDetail,
         fail: true,
         announce: copy.announceDropped,
