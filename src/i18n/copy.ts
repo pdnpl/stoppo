@@ -26,7 +26,8 @@ export interface Copy {
   /** Ends where the number begins — the seconds are their own element. */
   waitBeforeCount: string;
   seconds: (value: string) => string;
-  countingNow: (seconds: string) => string;
+  /** Headline over the interval once the count is actually running. */
+  countPrompt: string;
   flashTap: string;
   flashStart: string;
 
@@ -94,7 +95,7 @@ const EN: Copy = {
   waitReflex: 'do not press until it lights up',
   waitBeforeCount: 'the flash starts it — then you count',
   seconds: (value) => `${value}s`,
-  countingNow: (seconds) => `counting ${seconds}s`,
+  countPrompt: 'Tap in',
   flashTap: 'Tap',
   flashStart: 'Start',
 
@@ -168,7 +169,7 @@ const PL: Copy = {
   waitReflex: 'nie klikaj, dopóki się nie zapali',
   waitBeforeCount: 'błysk to start — dopiero potem odliczasz',
   seconds: (value) => `${value}s`,
-  countingNow: (seconds) => `liczysz ${seconds}s`,
+  countPrompt: 'Kliknij za',
   flashTap: 'Teraz',
   flashStart: 'Start',
 

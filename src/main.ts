@@ -55,7 +55,8 @@ const back = button('back');
 const cue = el('cue');
 const cueSub = el('cueSub');
 const cueTarget = el('cueTarget');
-const counting = el('counting');
+const countingLabel = el('countingLabel');
+const countingTarget = el('countingTarget');
 const verdict = el('verdict');
 const verdictLabel = el('verdictLabel');
 const verdictValue = el('verdictValue');
@@ -166,12 +167,14 @@ function render(state: GameState): void {
   if (plan.targetMs === null) {
     cueSub.textContent = copy.waitReflex;
     cueTarget.textContent = '';
-    counting.textContent = '';
+    countingLabel.textContent = '';
+    countingTarget.textContent = '';
   } else {
-    const seconds = formatTargetSeconds(plan.targetMs);
+    const seconds = copy.seconds(formatTargetSeconds(plan.targetMs));
     cueSub.textContent = copy.waitBeforeCount;
-    cueTarget.textContent = copy.seconds(seconds);
-    counting.textContent = copy.countingNow(seconds);
+    cueTarget.textContent = seconds;
+    countingLabel.textContent = copy.countPrompt;
+    countingTarget.textContent = seconds;
   }
 }
 

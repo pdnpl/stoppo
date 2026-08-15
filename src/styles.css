@@ -490,21 +490,47 @@ button {
   display: none;
 }
 
-/* Absolutely placed so switching to it costs no layout, and deliberately
-   motionless: a moving pixel here is a clock the player could read. */
+/* Absolutely placed so switching to it costs no layout. Once it has arrived it
+   is utterly still: a moving pixel here would be a clock the player could read
+   instead of keeping their own. The delay lets the waiting group finish leaving
+   before this arrives, so the two never overlap. */
 .counting {
   position: absolute;
   top: 50%;
   left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   margin: 0;
-  font-size: clamp(20px, 5.5vmin, 30px);
-  letter-spacing: 0.16em;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted-deep);
+  text-align: center;
   opacity: 0;
   transform: translate(-50%, -50%);
-  transition: opacity 200ms var(--ease);
+  transition: opacity 160ms var(--ease) 160ms;
   pointer-events: none;
+}
+
+.counting__label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Bigger and whiter than the interval shown while waiting — cyan and smaller
+   means "not yet", white and large means "you are on". */
+.counting__target {
+  margin: 0;
+  font-size: clamp(60px, 17vmin, 104px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  text-shadow: 0 0 44px rgb(34 211 238 / 45%);
 }
 
 .stage[data-phase='flashPending'] .core,
@@ -859,5 +885,9 @@ button {
 
   .cue-target {
     font-size: clamp(38px, 10vmin, 58px);
+  }
+
+  .counting__target {
+    font-size: clamp(52px, 14vmin, 80px);
   }
 }
