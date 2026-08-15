@@ -58,14 +58,17 @@ export function gradeOf(outcome: Outcome): Grade | null {
   }
 }
 
-/** Milliseconds as a whole number: `184`. */
-export function formatMs(ms: number): string {
-  return Math.round(ms).toString();
-}
-
-/** Seconds to millisecond precision: `3.184`. */
-export function formatSeconds(ms: number): string {
-  return (Math.round(ms) / 1000).toFixed(3);
+/**
+ * Seconds to millisecond precision: `0.214`, `3.184`. Every measured value on
+ * screen goes through here — "ms" is jargon, and the same number said in
+ * seconds costs nothing to read.
+ *
+ * The separator is the caller's, because Polish writes `0,214` and English
+ * writes `0.214`, and a game that gets that wrong looks untranslated.
+ */
+export function formatSeconds(ms: number, decimal = '.'): string {
+  const text = (Math.round(ms) / 1000).toFixed(3);
+  return decimal === '.' ? text : text.replace('.', decimal);
 }
 
 /** Whole seconds for target labels: `6`. */

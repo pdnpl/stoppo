@@ -17,10 +17,17 @@ describe('verdictView', () => {
 
     expect(view).toMatchObject({
       label: 'Elite',
-      number: '184',
-      unit: 'ms',
+      number: '0.184',
+      unit: 'seconds',
       fail: false,
     });
+  });
+
+  it('says the same reaction with a comma in Polish', () => {
+    const view = verdictView({ kind: 'reaction', reactionMs: 184 }, pl);
+
+    expect(view.number).toBe('0,184');
+    expect(view.unit).toBe('sekundy');
   });
 
   it('says how late a counted round landed, and against what', () => {
@@ -29,8 +36,8 @@ describe('verdictView', () => {
       en,
     );
 
-    expect(view.number).toBe('184');
-    expect(view.unit).toBe('ms late');
+    expect(view.number).toBe('0.184');
+    expect(view.unit).toBe('seconds late');
     expect(view.detail).toBe('target 3.000s · you 3.184s');
     expect(view.fail).toBe(false);
   });
@@ -52,8 +59,27 @@ describe('verdictView', () => {
 
     expect(view.label).toBe('Too early');
     expect(view.number).toBe('');
-    expect(view.detail).toContain('200 ms early');
+    expect(view.detail).toContain('0.200 seconds early');
     expect(view.detail).toContain('target 3.000s');
+  });
+
+  it('leaves no millisecond abbreviation anywhere a player can read it', () => {
+    const outcomes = [
+      { kind: 'reaction', reactionMs: 184 },
+      { kind: 'timed', targetMs: 3_000, elapsedMs: 3_184, errorMs: 184 },
+      { kind: 'falseStart', earlyByMs: 400 },
+      { kind: 'tooEarly', targetMs: 3_000, elapsedMs: 2_800, shortByMs: 200 },
+      { kind: 'abandoned' },
+    ] as const;
+
+    for (const copy of [en, pl]) {
+      for (const outcome of outcomes) {
+        const view = verdictView(outcome, copy);
+        for (const text of [view.unit, view.detail, view.announce]) {
+          expect(text, `${outcome.kind}: ${text}`).not.toMatch(/\bms\b/);
+        }
+      }
+    }
   });
 
   it('speaks Polish when handed the Polish copy', () => {
@@ -95,7 +121,7 @@ describe('recordView', () => {
 
     expect(view.beats).toBe(true);
     expect(view.ratio).toBeLessThan(1);
-    expect(view.line).toContain('16');
+    expect(view.line).toBe('new record — 0.016 s better');
   });
 
   it('pushes the disc outside the ring when the round was worse', () => {
@@ -103,8 +129,7 @@ describe('recordView', () => {
 
     expect(view.beats).toBe(false);
     expect(view.ratio).toBeGreaterThan(1);
-    expect(view.line).toContain('28');
-    expect(view.line).toContain('186');
+    expect(view.line).toBe('0.028 s off your best of 0.186 s');
   });
 
   it('calls a tie a tie rather than a record', () => {
@@ -127,8 +152,22 @@ describe('recordView', () => {
   it('describes the picture for anyone who cannot see it', () => {
     const view = recordView(214, 186, pl);
 
-    expect(view.label).toContain('214');
-    expect(view.label).toContain('186');
-    expect(view.line).toContain('rekordu');
+    expect(view.label).toContain('0,214');
+    expect(view.label).toContain('0,186');
+    expect(view.line).toBe('o 0,028 s gorzej od rekordu 0,186 s');
+  });
+
+  it('counts in seconds in every line, in both languages', () => {
+    const lines = [
+      recordView(170, 186, en).line,
+      recordView(214, 186, en).line,
+      recordView(170, 186, pl).line,
+      recordView(214, 186, pl).line,
+      recordView(214, null, pl).line,
+    ];
+
+    for (const line of lines) {
+      expect(line, line).not.toMatch(/\bms\b/);
+    }
   });
 });
