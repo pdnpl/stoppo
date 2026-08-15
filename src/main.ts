@@ -58,8 +58,8 @@ const cueTarget = el('cueTarget');
 const counting = el('counting');
 const verdict = el('verdict');
 const verdictLabel = el('verdictLabel');
-const verdictNumber = el('verdictNumber');
-const verdictUnit = el('verdictUnit');
+const verdictValue = el('verdictValue');
+const verdictSymbol = el('verdictSymbol');
 const verdictRecord = el('verdictRecord');
 const verdictDetail = el('verdictDetail');
 const dial = el('dial');
@@ -216,8 +216,8 @@ function settled(outcome: Outcome, plan: RoundPlan): void {
 
   verdict.classList.toggle('is-fail', view.fail);
   verdictLabel.textContent = view.label;
-  verdictNumber.textContent = view.number;
-  verdictUnit.textContent = view.unit;
+  verdictValue.textContent = view.number;
+  verdictSymbol.hidden = view.number === '';
   verdictDetail.textContent = view.detail;
 
   const score = scoreOf(outcome);
@@ -394,6 +394,7 @@ function applyCopy(): void {
   secondsLabel.textContent = copy.howManySeconds;
   chips.setAttribute('aria-label', copy.howManySeconds);
   fineprint.textContent = copy.fineprint;
+  verdictSymbol.textContent = copy.secondSymbol;
   resetClear();
   back.textContent = copy.back;
   again.textContent = copy.again;

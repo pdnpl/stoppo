@@ -18,16 +18,15 @@ describe('verdictView', () => {
     expect(view).toMatchObject({
       label: 'Elite',
       number: '0.184',
-      unit: 'seconds',
+      detail: '',
       fail: false,
     });
   });
 
   it('says the same reaction with a comma in Polish', () => {
-    const view = verdictView({ kind: 'reaction', reactionMs: 184 }, pl);
-
-    expect(view.number).toBe('0,184');
-    expect(view.unit).toBe('sekundy');
+    expect(verdictView({ kind: 'reaction', reactionMs: 184 }, pl).number).toBe(
+      '0,184',
+    );
   });
 
   it('says how late a counted round landed, and against what', () => {
@@ -37,7 +36,6 @@ describe('verdictView', () => {
     );
 
     expect(view.number).toBe('0.184');
-    expect(view.unit).toBe('seconds late');
     expect(view.detail).toBe('target 3.000s · you 3.184s');
     expect(view.fail).toBe(false);
   });
@@ -75,7 +73,7 @@ describe('verdictView', () => {
     for (const copy of [en, pl]) {
       for (const outcome of outcomes) {
         const view = verdictView(outcome, copy);
-        for (const text of [view.unit, view.detail, view.announce]) {
+        for (const text of [view.label, view.detail, view.announce]) {
           expect(text, `${outcome.kind}: ${text}`).not.toMatch(/\bms\b/);
         }
       }

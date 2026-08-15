@@ -33,8 +33,8 @@ export interface Copy {
   grades: Record<Grade, string>;
   /** Decimal separator: a full stop in English, a comma in Polish. */
   decimal: string;
-  unitSeconds: string;
-  unitLate: string;
+  /** The unit that rides inside the disc, next to the number. */
+  secondSymbol: string;
   unitShort: string;
 
   falseStart: string;
@@ -107,8 +107,7 @@ const EN: Copy = {
     slack: 'Warming up',
   },
   decimal: '.',
-  unitSeconds: 'seconds',
-  unitLate: 'seconds late',
+  secondSymbol: 's',
   unitShort: 'seconds early',
 
   falseStart: 'False start',
@@ -182,8 +181,7 @@ const PL: Copy = {
     slack: 'Rozgrzewka',
   },
   decimal: ',',
-  unitSeconds: 'sekundy',
-  unitLate: 'sekundy po czasie',
+  secondSymbol: 's',
   unitShort: 'sekundy za wcześnie',
 
   falseStart: 'Falstart',
