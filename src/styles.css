@@ -77,6 +77,11 @@ button {
   white-space: nowrap;
 }
 
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
 /* --- ambient light ------------------------------------------------------ */
 
 .glow {
@@ -101,44 +106,15 @@ button {
 /* --- home --------------------------------------------------------------- */
 
 .home {
-  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 26px;
-  padding: max(56px, env(safe-area-inset-top)) var(--pad-edge)
-    max(28px, env(safe-area-inset-bottom));
+  gap: 24px;
+  padding: max(28px, env(safe-area-inset-top)) var(--pad-edge)
+    max(24px, env(safe-area-inset-bottom));
   animation: rise 420ms var(--ease) both;
-}
-
-.lang {
-  position: absolute;
-  top: max(16px, env(safe-area-inset-top));
-  right: var(--pad-edge);
-  display: flex;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid rgb(148 163 184 / 14%);
-  border-radius: 999px;
-}
-
-.lang__btn {
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--muted-deep);
-  transition:
-    background-color 160ms var(--ease),
-    color 160ms var(--ease);
-}
-
-.lang__btn.is-selected {
-  background: var(--cyan-glass);
-  color: var(--cyan-soft);
 }
 
 .brand {
@@ -172,6 +148,8 @@ button {
   color: var(--muted);
 }
 
+/* --- modes, which are also the start buttons ---------------------------- */
+
 .modes {
   display: flex;
   width: min(100%, 380px);
@@ -181,23 +159,23 @@ button {
 
 .mode {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 15px 17px;
-  border: 1px solid rgb(148 163 184 / 14%);
+  align-items: center;
+  gap: 14px;
+  padding: 14px 15px 14px 18px;
+  border: 1px solid rgb(148 163 184 / 16%);
   border-radius: 14px;
-  background: rgb(255 255 255 / 2.5%);
+  background: rgb(255 255 255 / 3%);
   text-align: left;
   transition:
     border-color 180ms var(--ease),
     background-color 180ms var(--ease),
-    transform 180ms var(--ease);
+    transform 140ms var(--ease);
 }
 
 @media (hover: hover) {
   .mode:hover {
-    border-color: rgb(148 163 184 / 30%);
-    background: rgb(255 255 255 / 5%);
+    border-color: var(--cyan-line);
+    background: rgb(255 255 255 / 6%);
   }
 }
 
@@ -205,12 +183,18 @@ button {
   transform: scale(0.985);
 }
 
-.mode.is-selected {
+/* The mode you played last, so the space bar has somewhere obvious to go. */
+.mode.is-last {
   border-color: var(--cyan-line);
   background: var(--cyan-glass);
-  box-shadow:
-    0 0 0 1px rgb(34 211 238 / 12%),
-    0 12px 40px -20px rgb(34 211 238 / 70%);
+}
+
+.mode__text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .mode__row {
@@ -225,10 +209,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-}
-
-.mode.is-selected .mode__name {
-  color: var(--cyan-soft);
+  color: var(--ink);
 }
 
 .mode__best {
@@ -239,23 +220,44 @@ button {
   white-space: nowrap;
 }
 
-.mode.is-selected .mode__best {
-  color: var(--muted);
-}
-
 .mode__desc {
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--muted);
 }
 
-/* --- interval picker ---------------------------------------------------- */
+/* The one glowing thing on the card: press here and the round starts. */
+.mode__go {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cyan-line);
+  border-radius: 50%;
+  background: rgb(34 211 238 / 14%);
+  color: var(--cyan);
+  box-shadow: 0 0 22px -6px rgb(34 211 238 / 90%);
+  transition: transform 200ms var(--ease);
+}
+
+.icon-play {
+  margin-left: 2px;
+}
+
+.mode[aria-expanded='true'] .mode__go {
+  transform: rotate(180deg);
+}
+
+/* --- seconds picker ----------------------------------------------------- */
 
 .lockrow {
   display: flex;
   width: min(100%, 380px);
   flex-direction: column;
   gap: 10px;
+  margin-top: -8px;
   animation: rise 260ms var(--ease) both;
 }
 
@@ -272,73 +274,35 @@ button {
   gap: 7px;
 }
 
+/* Each chip is also the start button for that interval. */
 .chip {
-  min-width: 44px;
-  padding: 9px 4px;
-  border: 1px solid rgb(148 163 184 / 16%);
+  min-width: 46px;
+  padding: 11px 4px;
+  border: 1px solid var(--cyan-line);
   border-radius: 10px;
+  background: rgb(34 211 238 / 8%);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: var(--cyan-soft);
   text-align: center;
   transition:
-    border-color 160ms var(--ease),
     background-color 160ms var(--ease),
-    color 160ms var(--ease);
-}
-
-.chip.is-selected {
-  border-color: var(--cyan-line);
-  background: var(--cyan-glass);
-  color: var(--cyan-soft);
-}
-
-/* --- play --------------------------------------------------------------- */
-
-.play {
-  display: flex;
-  width: min(100%, 380px);
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 17px 24px;
-  border: 1px solid var(--cyan-line);
-  border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgb(34 211 238 / 18%),
-    rgb(34 211 238 / 8%)
-  );
-  box-shadow: 0 16px 46px -22px rgb(34 211 238 / 90%);
-  transition:
-    transform 160ms var(--ease),
-    box-shadow 160ms var(--ease);
+    transform 140ms var(--ease);
 }
 
 @media (hover: hover) {
-  .play:hover {
-    box-shadow: 0 18px 52px -20px rgb(34 211 238 / 100%);
+  .chip:hover {
+    background: rgb(34 211 238 / 18%);
   }
 }
 
-.play:active {
-  transform: scale(0.98);
+.chip:active {
+  transform: scale(0.96);
 }
 
-.play__label {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.28em;
-  text-indent: 0.28em;
-  text-transform: uppercase;
+.chip.is-last {
+  background: rgb(34 211 238 / 22%);
   color: var(--ink);
-}
-
-.play__hint {
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgb(110 231 249 / 55%);
 }
 
 .fineprint {
@@ -348,6 +312,56 @@ button {
   line-height: 1.6;
   text-align: center;
   color: var(--muted-deep);
+}
+
+/* --- footer ------------------------------------------------------------- */
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgb(148 163 184 / 14%);
+  border-radius: 999px;
+}
+
+.lang__btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted-deep);
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease);
+}
+
+.lang__btn.is-selected {
+  background: var(--cyan-glass);
+  color: var(--cyan-soft);
+}
+
+/* Only worth saying where there is a keyboard to say it about. */
+.footer__hint {
+  display: none;
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-deep);
+}
+
+@media (pointer: fine) {
+  .footer__hint {
+    display: block;
+  }
 }
 
 /* --- stage -------------------------------------------------------------- */
@@ -501,10 +515,7 @@ button {
 .stage[data-phase='result'] .verdict,
 .stage[data-phase='falseStart'] .verdict,
 .stage[data-phase='tooEarly'] .verdict,
-.stage[data-phase='abandoned'] .verdict {
-  display: flex;
-}
-
+.stage[data-phase='abandoned'] .verdict,
 .stage[data-phase='result'] .retry,
 .stage[data-phase='falseStart'] .retry,
 .stage[data-phase='tooEarly'] .retry,
@@ -517,14 +528,13 @@ button {
 .verdict {
   flex-direction: column;
   align-items: center;
-  gap: 0;
-  padding-bottom: 92px; /* keeps the stack clear of the retry pill */
+  padding-bottom: 96px; /* keeps the stack clear of the retry pill */
   text-align: center;
   animation: rise 240ms var(--ease) both;
 }
 
 .verdict__label {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.34em;
@@ -533,114 +543,129 @@ button {
   color: var(--cyan);
 }
 
+/* Nothing was measured, so the headline is the whole message. */
 .verdict.is-fail .verdict__label {
+  margin-bottom: 14px;
+  font-size: clamp(26px, 7vw, 40px);
+  letter-spacing: 0.1em;
+  text-indent: 0.1em;
   color: var(--danger);
 }
 
-.verdict__value {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 9px;
-  margin: 0;
+.verdict.is-fail .dial,
+.verdict.is-fail .verdict__unit,
+.verdict.is-fail .verdict__record {
+  display: none;
 }
 
-.verdict__number {
-  font-size: clamp(52px, 14vw, 104px);
+/* --- the record ring ---------------------------------------------------- */
+
+.dial {
+  --dial-size: clamp(168px, 42vmin, 236px);
+  position: relative;
+  width: var(--dial-size);
+  height: var(--dial-size);
+  margin-top: 4px;
+}
+
+.dial__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The ring is the record you were chasing. */
+.dial__ring {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 7;
+  transition: stroke 300ms var(--ease);
+}
+
+/* The disc is this round. Smaller than the ring means you beat it. */
+.dial__disc {
+  fill: rgb(245 181 68 / 20%);
+  stroke: var(--amber);
+  stroke-width: 2.5;
+  transition:
+    r 420ms var(--ease),
+    fill 300ms var(--ease),
+    stroke 300ms var(--ease);
+}
+
+.dial.is-record .dial__ring {
+  stroke: var(--muted-deep);
+}
+
+.dial.is-record .dial__disc,
+.dial.is-first .dial__disc {
+  fill: rgb(34 211 238 / 22%);
+  stroke: var(--cyan);
+}
+
+.dial.is-first .dial__ring {
+  display: none;
+}
+
+.dial__number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--dial-size) * 0.17);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 46px rgb(34 211 238 / 55%);
-}
-
-.verdict.is-fail .verdict__number {
-  color: var(--danger);
-  text-shadow: 0 0 46px rgb(251 77 99 / 40%);
+  color: var(--ink);
+  text-shadow: 0 0 34px rgb(34 211 238 / 45%);
 }
 
 .verdict__unit {
-  font-size: 13px;
-  letter-spacing: 0.2em;
+  margin: 10px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--muted);
-  white-space: nowrap;
 }
 
-/* --- quality meter ------------------------------------------------------ */
-
-.meter {
-  position: relative;
-  width: min(280px, 66vw);
-  height: 7px;
-  margin: 18px 0 0;
-  border-radius: 999px;
-  background: rgb(148 163 184 / 14%);
-  overflow: hidden;
+.verdict__record {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
 }
 
-.meter::after {
-  /* Four ticks, so the bar reads as a scale rather than a mood. */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 calc(20% - 1px),
-    rgb(4 5 11 / 65%) calc(20% - 1px) 20%
-  );
+.verdict__record.is-better {
+  color: var(--cyan);
 }
 
-.meter__fill {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--cyan);
-  box-shadow: 0 0 14px rgb(34 211 238 / 70%);
-  transform-origin: left center;
-  transition: width 420ms var(--ease);
-}
-
-.meter[data-band='mid'] .meter__fill {
-  background: var(--amber);
-  box-shadow: 0 0 14px rgb(245 181 68 / 60%);
-}
-
-.meter[data-band='poor'] .meter__fill {
-  background: var(--danger);
-  box-shadow: 0 0 14px rgb(251 77 99 / 55%);
+.verdict__record.is-neutral {
+  color: var(--muted-deep);
 }
 
 .verdict__detail {
-  margin: 16px 0 0;
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  margin: 7px 0 0;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: var(--muted-deep);
 }
 
 .verdict__detail:empty {
   display: none;
 }
 
-.verdict__best {
-  margin: 6px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted-deep);
-}
-
-.verdict__best.is-record {
-  color: var(--cyan);
-}
-
 /* --- retry, in the thumb band, on the side the hand is already on -------- */
 
 .retry {
   position: fixed;
-  bottom: max(7vh, calc(28px + env(safe-area-inset-bottom)));
+  bottom: max(6vh, calc(24px + env(safe-area-inset-bottom)));
   left: var(--tap-x, 50%);
   z-index: 20;
   flex-direction: column;
@@ -768,25 +793,30 @@ button {
 
 /* --- small screens ------------------------------------------------------ */
 
-@media (max-height: 700px) {
+@media (max-height: 720px) {
   .home {
-    gap: 18px;
+    gap: 16px;
   }
 
   .brand__mark {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
   }
 
   .brand__name {
-    font-size: 25px;
+    margin-top: 10px;
+    font-size: 24px;
   }
 
   .mode {
-    padding: 12px 15px;
+    padding: 12px 13px 12px 16px;
   }
 
   .verdict {
-    padding-bottom: 78px;
+    padding-bottom: 84px;
+  }
+
+  .dial {
+    --dial-size: clamp(150px, 34vmin, 200px);
   }
 }

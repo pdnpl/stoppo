@@ -11,10 +11,9 @@ export interface Copy {
   language: string;
   modeGroup: string;
   modes: Record<Mode, { name: string; desc: string }>;
-  interval: string;
-  play: string;
-  playHint: string;
+  howManySeconds: string;
   fineprint: string;
+  spaceHint: string;
 
   back: string;
   again: string;
@@ -31,7 +30,6 @@ export interface Copy {
   unitMs: string;
   unitLate: string;
   unitShort: string;
-  noNumber: string;
 
   falseStart: string;
   falseStartDetail: string;
@@ -40,8 +38,12 @@ export interface Copy {
   droppedDetail: string;
   againstTarget: (target: string, you: string) => string;
 
-  best: (value: string) => string;
-  newBest: string;
+  firstRound: string;
+  newRecordBy: (better: string) => string;
+  sameAsRecord: string;
+  offBest: (worse: string, best: string) => string;
+  ringLabel: (now: string, best: string) => string;
+
   bestNone: string;
   bestReflex: (value: string) => string;
   bestOff: (value: string) => string;
@@ -60,7 +62,7 @@ const EN: Copy = {
   modes: {
     reflex: {
       name: 'Reflex',
-      desc: 'It lights up. You tap. Nothing else in your head.',
+      desc: 'It lights up. You tap. Speed is all that counts.',
     },
     count: {
       name: 'Count',
@@ -68,14 +70,13 @@ const EN: Copy = {
     },
     lock: {
       name: 'Lock',
-      desc: 'One interval you pick, over and over, until you own it.',
+      desc: 'Pick one number of seconds and practise it until you own it.',
     },
   },
-  interval: 'Interval',
-  play: 'Play',
-  playHint: 'or press space',
+  howManySeconds: 'How many seconds',
   fineprint:
     'Plays bright flashes on a dark screen. Sit this one out if that is a problem for you.',
+  spaceHint: 'space starts your last mode',
 
   back: 'Modes',
   again: 'Again',
@@ -100,7 +101,6 @@ const EN: Copy = {
   unitMs: 'ms',
   unitLate: 'ms late',
   unitShort: 'ms early',
-  noNumber: '—',
 
   falseStart: 'False start',
   falseStartDetail: 'You went before the light.',
@@ -109,8 +109,13 @@ const EN: Copy = {
   droppedDetail: 'No press came. Round dropped.',
   againstTarget: (target, you) => `target ${target}s · you ${you}s`,
 
-  best: (value) => `Best ${value}`,
-  newBest: 'New best',
+  firstRound: 'your first round in this mode',
+  newRecordBy: (better) => `new record — ${better} ms better`,
+  sameAsRecord: 'exactly your record',
+  offBest: (worse, best) => `${worse} ms off your best of ${best} ms`,
+  ringLabel: (now, best) =>
+    `${now} against your best of ${best}. The ring is the record.`,
+
   bestNone: '—',
   bestReflex: (value) => `${value} ms`,
   bestOff: (value) => `${value} ms off`,
@@ -129,7 +134,7 @@ const PL: Copy = {
   modes: {
     reflex: {
       name: 'Refleks',
-      desc: 'Ekran się zapala. Klikasz. Nic więcej w głowie.',
+      desc: 'Ekran się zapala. Klikasz. Liczy się tylko refleks.',
     },
     count: {
       name: 'Odliczanie',
@@ -137,14 +142,13 @@ const PL: Copy = {
     },
     lock: {
       name: 'Trening',
-      desc: 'Jeden interwał, który wybierasz i powtarzasz, aż go opanujesz.',
+      desc: 'Wybierasz jedną liczbę sekund i ćwiczysz ją, aż ją opanujesz.',
     },
   },
-  interval: 'Interwał',
-  play: 'Graj',
-  playHint: 'albo spacja',
+  howManySeconds: 'Ile sekund',
   fineprint:
     'Gra pokazuje jasne błyski na ciemnym ekranie. Odpuść, jeśli to dla Ciebie problem.',
+  spaceHint: 'spacja startuje ostatni tryb',
 
   back: 'Tryby',
   again: 'Jeszcze raz',
@@ -169,7 +173,6 @@ const PL: Copy = {
   unitMs: 'ms',
   unitLate: 'ms po czasie',
   unitShort: 'ms za wcześnie',
-  noNumber: '—',
 
   falseStart: 'Falstart',
   falseStartDetail: 'Kliknięcie przed błyskiem.',
@@ -178,8 +181,13 @@ const PL: Copy = {
   droppedDetail: 'Nikt nie kliknął. Runda przepadła.',
   againstTarget: (target, you) => `cel ${target} s · Ty ${you} s`,
 
-  best: (value) => `Rekord ${value}`,
-  newBest: 'Nowy rekord',
+  firstRound: 'pierwszy wynik w tym trybie',
+  newRecordBy: (better) => `nowy rekord — o ${better} ms lepiej`,
+  sameAsRecord: 'dokładnie tyle co rekord',
+  offBest: (worse, best) => `o ${worse} ms gorzej od rekordu ${best} ms`,
+  ringLabel: (now, best) =>
+    `${now} przy rekordzie ${best}. Pierścień to rekord.`,
+
   bestNone: '—',
   bestReflex: (value) => `${value} ms`,
   bestOff: (value) => `${value} ms błędu`,
