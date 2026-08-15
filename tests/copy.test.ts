@@ -49,7 +49,7 @@ describe('copy', () => {
   it('threads values through the sentences that take them', () => {
     for (const locale of LOCALES) {
       const copy = COPY[locale];
-      expect(copy.waitThenCount('3')).toContain('3');
+      expect(copy.seconds('3')).toContain('3');
       expect(copy.countingNow('7')).toContain('7');
       expect(copy.againstTarget('3.000', '3.184')).toContain('3.184');
       expect(copy.bestReflex('184')).toContain('184');

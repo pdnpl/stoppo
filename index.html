@@ -180,7 +180,7 @@
               EN
             </button>
           </div>
-          <p id="spaceHint" class="footer__hint">space starts your last mode</p>
+          <button type="button" id="clear" class="clear">Clear records</button>
         </div>
       </section>
 
@@ -191,14 +191,13 @@
         data-mode="reflex"
         hidden
       >
-        <button type="button" id="back" class="back">Modes</button>
-
         <div class="core">
           <div class="waiter" aria-hidden="true">
             <span class="waiter__arc"></span>
           </div>
           <p id="cue" class="cue">Wait</p>
           <p id="cueSub" class="cue-sub"></p>
+          <p id="cueTarget" class="cue-target"></p>
           <p id="counting" class="counting"></p>
         </div>
 
@@ -240,6 +239,7 @@
           <p id="againHint" class="retry__hint">
             or tap anywhere on the screen
           </p>
+          <button type="button" id="back" class="back">Modes</button>
         </div>
       </section>
     </main>

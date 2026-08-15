@@ -14,6 +14,7 @@ import { loadPrefs, savePrefs } from './game/prefs';
 import {
   bestFor,
   browserStorage,
+  emptyRecords,
   loadRecords,
   saveRecords,
   submitScore,
@@ -53,6 +54,7 @@ const stage = el('stage');
 const back = button('back');
 const cue = el('cue');
 const cueSub = el('cueSub');
+const cueTarget = el('cueTarget');
 const counting = el('counting');
 const verdict = el('verdict');
 const verdictLabel = el('verdictLabel');
@@ -62,7 +64,6 @@ const verdictRecord = el('verdictRecord');
 const verdictDetail = el('verdictDetail');
 const dial = el('dial');
 const dialDisc = svgEl('#dialDisc');
-const retry = el('retry');
 const again = button('again');
 const againHint = el('againHint');
 const flash = el('flash');
@@ -75,7 +76,7 @@ const modes = el('modes');
 const lang = el('lang');
 const tagline = el('tagline');
 const fineprint = el('fineprint');
-const spaceHint = el('spaceHint');
+const clear = button('clear');
 
 const modeButtons = Array.from(
   document.querySelectorAll<HTMLButtonElement>('.mode'),
@@ -112,7 +113,6 @@ const storage = browserStorage();
 let records = loadRecords(storage);
 let prefs = loadPrefs(storage, detectLocale(navigator.languages));
 let copy: Copy = COPY[prefs.locale];
-let lastPointer: { x: number; y: number } | null = null;
 let pulseTimer: number | null = null;
 
 /* -------------------------------------------------------------------------
@@ -165,23 +165,14 @@ function render(state: GameState): void {
 
   if (plan.targetMs === null) {
     cueSub.textContent = copy.waitReflex;
+    cueTarget.textContent = '';
     counting.textContent = '';
   } else {
     const seconds = formatTargetSeconds(plan.targetMs);
-    cueSub.textContent = copy.waitThenCount(seconds);
+    cueSub.textContent = copy.waitBeforeCount;
+    cueTarget.textContent = copy.seconds(seconds);
     counting.textContent = copy.countingNow(seconds);
   }
-}
-
-/** The pill follows the hand sideways, but never into the verdict's space. */
-function placeRetry(): void {
-  const margin = 110;
-  const x =
-    lastPointer === null
-      ? window.innerWidth / 2
-      : Math.min(Math.max(lastPointer.x, margin), window.innerWidth - margin);
-
-  retry.style.setProperty('--tap-x', `${Math.round(x)}px`);
 }
 
 /**
@@ -241,7 +232,6 @@ function settled(outcome: Outcome, plan: RoundPlan): void {
     if (result.isRecord) saveRecords(storage, records);
   }
 
-  placeRetry();
   live.textContent = view.announce;
   buzz(view.fail ? [8, 40, 8] : 12);
 }
@@ -335,6 +325,46 @@ function pressSeconds(targetMs: number): void {
   startPlaying();
 }
 
+/* -------------------------------------------------------------------------
+   Clearing records
+   ------------------------------------------------------------------------- */
+
+let clearArmed = false;
+let clearTimer: number | null = null;
+
+function resetClear(): void {
+  if (clearTimer !== null) {
+    clearTimeout(clearTimer);
+    clearTimer = null;
+  }
+  clearArmed = false;
+  clear.classList.remove('is-armed');
+  clear.textContent = copy.clearRecords;
+}
+
+/**
+ * Two presses, because there is nowhere to recover a wiped record from — and a
+ * dialog would be a heavier promise than a personal best deserves.
+ */
+function pressClear(): void {
+  if (!clearArmed) {
+    resetClear();
+    clearArmed = true;
+    clear.classList.add('is-armed');
+    clear.textContent = copy.clearRecordsConfirm;
+    clearTimer = window.setTimeout(resetClear, 4_000);
+    return;
+  }
+
+  records = emptyRecords();
+  saveRecords(storage, records);
+  renderBests();
+
+  resetClear();
+  clear.textContent = copy.clearRecordsDone;
+  clearTimer = window.setTimeout(resetClear, 1_800);
+}
+
 function buildChips(): void {
   const fragment = document.createDocumentFragment();
   for (let ms = MIN_TARGET_MS; ms <= MAX_TARGET_MS; ms += TARGET_STEP_MS) {
@@ -364,7 +394,7 @@ function applyCopy(): void {
   secondsLabel.textContent = copy.howManySeconds;
   chips.setAttribute('aria-label', copy.howManySeconds);
   fineprint.textContent = copy.fineprint;
-  spaceHint.textContent = copy.spaceHint;
+  resetClear();
   back.textContent = copy.back;
   again.textContent = copy.again;
   againHint.textContent = copy.tapAnywhere;
@@ -412,6 +442,8 @@ for (const node of langButtons) {
   });
 }
 
+clear.addEventListener('click', pressClear);
+
 back.addEventListener('pointerdown', (event) => {
   // Otherwise the press bubbles to the stage and is read as "again".
   event.stopPropagation();
@@ -423,7 +455,6 @@ stage.addEventListener(
   (event) => {
     if (!event.isPrimary) return;
     event.preventDefault();
-    lastPointer = { x: event.clientX, y: event.clientY };
     engine.press(inputTime(event));
   },
   { passive: false },
@@ -450,7 +481,6 @@ window.addEventListener('keydown', (event) => {
   if (focused === back) return;
 
   event.preventDefault();
-  lastPointer = null;
   engine.press(inputTime(event));
 });
 

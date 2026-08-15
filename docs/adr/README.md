@@ -22,9 +22,11 @@ old one superseded.
 | [0010](0010-retry-under-the-finger.md)                    | The retry target appears under the finger              | Amended by [0015](0015-retry-follows-the-hand-sideways.md)    |
 | [0011](0011-enforced-prs-on-a-public-repo.md)             | Enforced pull requests on a public repository          | Accepted                                                      |
 | [0012](0012-flash-a-disc-not-the-screen.md)               | Flash a disc, not the whole screen                     | Accepted                                                      |
-| [0013](0013-say-wait-out-loud.md)                         | Say "wait" out loud, never show a clock while counting | Accepted                                                      |
+| [0013](0013-say-wait-out-loud.md)                         | Say "wait" out loud, never show a clock while counting | Amended by [0020](0020-the-interval-is-a-number-again.md)     |
 | [0014](0014-a-meter-because-milliseconds-mean-nothing.md) | A quality meter, because "ms" means nothing            | Amended by [0018](0018-the-record-ring-replaces-the-meter.md) |
-| [0015](0015-retry-follows-the-hand-sideways.md)           | The retry control follows the hand sideways only       | Accepted                                                      |
+| [0015](0015-retry-follows-the-hand-sideways.md)           | The retry control follows the hand sideways only       | Amended by [0019](0019-one-centred-control-band.md)           |
 | [0016](0016-polish-and-english.md)                        | Ship in Polish and English                             | Accepted                                                      |
 | [0017](0017-the-mode-card-is-the-start-button.md)         | The mode card is the start button                      | Accepted                                                      |
 | [0018](0018-the-record-ring-replaces-the-meter.md)        | The record ring replaces the quality meter             | Accepted                                                      |
+| [0019](0019-one-centred-control-band.md)                  | One centred control band along the bottom of the stage | Accepted                                                      |
+| [0020](0020-the-interval-is-a-number-again.md)            | The interval is a number again, under a clear wait     | Accepted                                                      |
