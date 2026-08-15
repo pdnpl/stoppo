@@ -5,8 +5,11 @@ import { defineConfig } from 'vitest/config';
 const port = Number(process.env.PORT) || 5173;
 
 export default defineConfig({
-  server: { port },
-  preview: { port },
+  // `host: true` binds every interface rather than just localhost, so the game
+  // can be opened from a phone on the same network. Testing a reaction game on
+  // a desktop mouse tells you very little; the target is a thumb on glass.
+  server: { host: true, port },
+  preview: { host: true, port },
   build: {
     target: 'es2022',
     // The game is a handful of kilobytes; a single chunk beats any preload dance.

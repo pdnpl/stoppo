@@ -80,6 +80,11 @@ npm install
 npm run dev
 ```
 
+The dev server binds every interface, so it prints a `Network:` address
+alongside the local one — open that on a phone on the same Wi-Fi to play it
+with a thumb, which is the only way to judge a reaction game honestly. `PORT`
+overrides the default of 5174.
+
 | Command             | Does                                         |
 | ------------------- | -------------------------------------------- |
 | `npm run dev`       | Vite dev server                              |
