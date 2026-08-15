@@ -50,7 +50,6 @@ describe('copy', () => {
     for (const locale of LOCALES) {
       const copy = COPY[locale];
       expect(copy.seconds('3')).toContain('3');
-      expect(copy.countingNow('7')).toContain('7');
       expect(copy.againstTarget('3.000', '3.184')).toContain('3.184');
       expect(copy.bestReflex('184')).toContain('184');
       expect(copy.bestOff('184')).toContain('184');
@@ -73,7 +72,6 @@ describe('copy', () => {
       const copy = COPY[locale];
       const rendered = [
         copy.seconds('4'),
-        copy.countingNow('6'),
         copy.againstTarget('3.000', '3.142'),
         copy.newRecordBy('0.016'),
         copy.offBest('0.028', '0.186'),
@@ -86,6 +84,19 @@ describe('copy', () => {
         expect(text, `${locale}: ${text}`).not.toMatch(loose);
       }
     }
+  });
+
+  it('tells the counting player what to do, not what is happening', () => {
+    // The waiting screen says "wait"; the counting screen has to say "tap",
+    // or an empty dark screen reads as a game that has stopped working.
+    for (const locale of LOCALES) {
+      const copy = COPY[locale];
+      expect(copy.countPrompt).not.toBe(copy.wait);
+      expect(copy.countPrompt.length).toBeGreaterThan(3);
+    }
+
+    expect(COPY.pl.countPrompt).toBe('Kliknij za');
+    expect(COPY.en.countPrompt).toBe('Tap in');
   });
 
   it('translates the mode names rather than leaving them English', () => {
